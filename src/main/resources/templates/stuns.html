@@ -34,7 +34,7 @@
         <td th:text="${s.bedrooms}"/>
         <td th:text="${s.livingArea}"/>
         <td th:text="${s.price}"/>
-        <td th:text="${s.lastModified}"/>
+        <td th:text="${#strings.replace(s.lastModified, ' 00:00:00.0', '')}"/>
         <td><a th:href="${s.link}" th:text="${s.realiticaId}" target="_blank"></a></td>
     </tr>
     </tbody>
