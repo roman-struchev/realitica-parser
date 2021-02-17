@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Parser</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.js"></script>
+</head>
+<body>
+
+<table id="table_id" class="display">
+    <thead>
+    <tr>
+        <th>district</th>
+        <th>location</th>
+        <th>bedrooms</th>
+        <th>livingArea</th>
+        <th>price</th>
+        <th>lastModified</th>
+        <th>link</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="s: ${stuns}">
+        <td th:text="${s.district}"/>
+        <td th:text="${s.location}"/>
+        <td th:text="${s.bedrooms}"/>
+        <td th:text="${s.livingArea}"/>
+        <td th:text="${s.price}"/>
+        <td th:text="${s.lastModified}"/>
+        <td><a th:href="${s.link}" th:text="${s.realiticaId}" target="_blank"></a></td>
+    </tr>
+    </tbody>
+</table>
+<script>
+    $(document).ready( function () {
+        $('#table_id').DataTable({
+            "paging": false
+        });
+    } );
+</script>
+</body>
+</html>
