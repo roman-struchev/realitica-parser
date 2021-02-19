@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class Loader {
 
     private final String REALITICA_HOST = "https://www.realitica.com/en";
-    private final String SEARCH_RESULT = "https://www.realitica.com/index.php?for=DuziNajam&opa=Podgorica&cty%5B%5D=Donja+Gorica&cty%5B%5D=Gorica&cty%5B%5D=Gorica+C&cty%5B%5D=Gornja+Gorica&cty%5B%5D=Masline&cty%5B%5D=Momi%C5%A1i%C4%87i&cty%5B%5D=Stari+Aerodrom&cty%5B%5D=Zagori%C4%8D&type%5B%5D=&price-min=300&price-max=700&qry=&lng=en";
+    private final String SEARCH_RESULT = "https://www.realitica.com/index.php?for=DuziNajam&opa=Podgorica&type%5B%5D=&price-min=&price-max=&qry=&lng=en";
     private final SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
 
     @Autowired
