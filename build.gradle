@@ -26,6 +26,7 @@ dependencies {
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql'
 
 	implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
 
