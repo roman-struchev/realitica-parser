@@ -11,8 +11,10 @@ import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -24,8 +26,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Loader {
 
-    private final String REALITICA_HOST = "https://www.realitica.com/en";
-    private final String SEARCH_RESULT = "https://www.realitica.com/index.php?for=DuziNajam&opa=Podgorica&type%5B%5D=&price-min=&price-max=&qry=&lng=en";
+    @Value("${realitica.url:https://www.realitica.com/en}")
+    private String REALITICA_URL;
+
+    // To select all stuns by all areas - because the cur_page has restricted - 100
+    @Value("${realitica.url_with_areas_by_city:https://www.realitica.com/rentals/podgorica/Montenegro/}")
+    private String REALITICA_URL_WITH_CITY_AREAS;
+    @Value("${realitica.url_with_stuns_by_city_and_area:https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=Podgorica&cty%5B%5D=%s}")
+    private String REALITICA_URL_WITH_STUNS_BY_CITY_AND_AREA;
+
+    // To select all stuns by ready filres - restrictions <= 200 - because the cur_page has restricted - 100
+    @Value("${realitica.url_with_stuns_filtered:}")
+    private String REALITICA_URL_FILTER;
+
     private final SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
 
     @Autowired
@@ -33,24 +46,47 @@ public class Loader {
 
     @Scheduled(fixedDelay = 1000 * 60 * 60)
     public void load() {
-        HashSet<String> ids = loadIdsBySearch();
-        ids.stream().forEach(id -> saveStun(id, 1));
-//        saveStun("2503647", 1);
+        List<String> urlsWithStuns = !REALITICA_URL_FILTER.isEmpty() ? Arrays.asList(REALITICA_URL_FILTER) :
+                loadAreas().stream()
+                        .map(area -> REALITICA_URL_WITH_STUNS_BY_CITY_AND_AREA.replace("%s", area))
+                        .collect(Collectors.toList());
+        urlsWithStuns.forEach(urlWithStuns -> {
+            log.info("Start to load by filter: {}", urlWithStuns);
+            HashSet<String> ids = loadIdsBySearch(urlWithStuns);
+            ids.stream().forEach(id -> saveStun(id, 1));
+        });
+    }
+
+
+    @SneakyThrows
+    private Set<String> loadAreas() {
+        Set<String> areas = new LinkedHashSet<>();
+        Document pageDoc = Jsoup.connect(REALITICA_URL_WITH_CITY_AREAS).get();
+        Elements areasElements = pageDoc.select("#search_col2 span.geosel");
+        for (Element element : areasElements) {
+            String area = element.text();
+            if (!StringUtils.isEmpty(area)) {
+                area = area.split(" \\(")[0].trim().replace(" ", "+");
+                areas.add(area);
+            }
+        }
+        log.info("Loaded cities: {}", areas);
+        return areas;
     }
 
     @SneakyThrows
-    private HashSet loadIdsBySearch() {
+    private HashSet loadIdsBySearch(String urlWithStuns) {
         HashSet<String> ids = new LinkedHashSet<>();
 
-        int curPage = 1;
-        while (curPage > 0) {
+        int curPage = 0;
+        while (curPage >= 0) {
             try {
-                String url = SEARCH_RESULT + "&cur_page=" + curPage;
+                String url = urlWithStuns + "&cur_page=" + curPage;
                 Document pageDoc = Jsoup.connect(url).get();
                 Elements stunElements = pageDoc.select("div.thumb_div > a");
                 if (stunElements.size() == 0) {
                     log.info("Last page {}", curPage + 1);
-                    curPage = 0;
+                    curPage = -1;
                     continue;
                 } else {
                     log.info("Loaded page {}", curPage + 1);
@@ -103,7 +139,7 @@ public class Loader {
         try {
             log.info("Loading stun {}", id);
 
-            Document doc = Jsoup.connect(REALITICA_HOST + "/listing/" + id).get();
+            Document doc = Jsoup.connect(REALITICA_URL + "/listing/" + id).get();
             Map<String, String> attributesMap = new LinkedHashMap();
 
             Elements parentElements = doc.select("div");
@@ -160,7 +196,7 @@ public class Loader {
             stun.setMoreInfo(attributesMap.get("More info at"));
             stun.setLastModified(lastMobified);
             stun.setType(attributesMap.get("Type"));
-            stun.setLink(REALITICA_HOST + "/listing/" + id);
+            stun.setLink(REALITICA_URL + "/listing/" + id);
             stunRepository.save(stun);
             log.info("Save stun {}", id);
         } catch (Throwable th) {
