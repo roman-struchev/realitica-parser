@@ -1,1 +1,1 @@
-Endpoint: https://realitica-parser.herokuapp.com/api/stuns
+Endpoint https://realitica-parser.herokuapp.com/api/stuns
