@@ -65,7 +65,7 @@ public class RealoticaLoader {
             }
 
             String search = element.child(0).attr("href");
-            if (element.child(0).childNodeSize() > 1) {
+            if (element.child(0).childNodeSize() > 1 || area.equals("Budva")) {
                 Map<String, Object> searchesInternal = loadSearchesByCitiesAndAreas(search);
                 searches.put(area, searchesInternal);
             } else {
