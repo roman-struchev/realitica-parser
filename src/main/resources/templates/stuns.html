@@ -19,6 +19,7 @@
     <thead>
     <tr>
         <th>district</th>
+        <th>type</th>
         <th>location</th>
         <th>bedrooms</th>
         <th>livingArea</th>
@@ -30,6 +31,7 @@
     <tbody>
     <tr th:each="s: ${stuns}">
         <td th:text="${s.district}"/>
+        <td th:text="${s.type}"/>
         <td th:text="${s.location}"/>
         <td th:text="${s.bedrooms}"/>
         <td th:text="${s.livingArea}"/>
@@ -42,10 +44,12 @@
 <script>
     $(document).ready( function () {
         $('#table_id').DataTable({
-            "paging": false,
+            "paging": true,
+            "lengthMenu": [ 100, 500, 1000 ],
             searchPanes: {
+                ascadePanes: true,
                 viewTotal: true,
-                columns: [0,1,2,5]
+                columns: [0,1,2,3]
             },
             dom: 'Plfrtip'
         });
