@@ -24,20 +24,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class Loader {
+public class RealoticaLoader {
 
     @Value("${realitica.url:https://www.realitica.com/en}")
     private String REALITICA_URL;
 
-    // To select all stuns by all areas - because the cur_page has restricted - 100
-    @Value("${realitica.url_with_areas_by_city:https://www.realitica.com/rentals/podgorica/Montenegro/}")
-    private String REALITICA_URL_WITH_CITY_AREAS;
-    @Value("${realitica.url_with_stuns_by_city_and_area:https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=Podgorica&cty%5B%5D=%s}")
-    private String REALITICA_URL_WITH_STUNS_BY_CITY_AND_AREA;
-
-    // To select all stuns by ready filres - restrictions <= 200 - because the cur_page has restricted - 100
-    @Value("${realitica.url_with_stuns_filtered:}")
-    private String REALITICA_URL_FILTER;
+    private List<String> CITIES = Arrays.asList("Podgorica", "Bar", "Budva", "Kotor");
 
     private final SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
 
@@ -46,32 +38,55 @@ public class Loader {
 
     @Scheduled(fixedDelay = 1000 * 60 * 60)
     public void load() {
-        List<String> urlsWithStuns = !REALITICA_URL_FILTER.isEmpty() ? Arrays.asList(REALITICA_URL_FILTER) :
-                loadAreas().stream()
-                        .map(area -> REALITICA_URL_WITH_STUNS_BY_CITY_AND_AREA.replace("%s", area))
-                        .collect(Collectors.toList());
-        urlsWithStuns.forEach(urlWithStuns -> {
+        Map<String, Object> searchesByCitiesAndAreas
+                = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/");
+        searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
+                .filter(e -> CITIES.contains(e.getKey()))
+                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+        List<String> searches = extractUrlsWithStuns(searchesByCitiesAndAreas);
+        searches.forEach(urlWithStuns -> {
             log.info("Start to load by filter: {}", urlWithStuns);
             HashSet<String> ids = loadIdsBySearch(urlWithStuns);
             ids.stream().forEach(id -> saveStun(id, 1));
         });
     }
 
-
     @SneakyThrows
-    private Set<String> loadAreas() {
-        Set<String> areas = new LinkedHashSet<>();
-        Document pageDoc = Jsoup.connect(REALITICA_URL_WITH_CITY_AREAS).get();
+    private Map<String, Object> loadSearchesByCitiesAndAreas(String rootUrl) {
+        Map<String, Object> searches = new LinkedHashMap<>();
+        Document pageDoc = Jsoup.connect(rootUrl).get();
         Elements areasElements = pageDoc.select("#search_col2 span.geosel");
         for (Element element : areasElements) {
             String area = element.text();
-            if (!StringUtils.isEmpty(area)) {
+            if (StringUtils.isEmpty(area)) {
+                continue;
+            } else {
                 area = area.split(" \\(")[0].trim().replace(" ", "+");
-                areas.add(area);
+            }
+
+            String search = element.child(0).attr("href");
+            if (element.child(0).childNodeSize() > 1) {
+                Map<String, Object> searchesInternal = loadSearchesByCitiesAndAreas(search);
+                searches.put(area, searchesInternal);
+            } else {
+                searches.put(area, search);
             }
         }
-        log.info("Loaded cities: {}", areas);
-        return areas;
+        return searches;
+    }
+
+    private List<String> extractUrlsWithStuns(Map<String, Object> searches) {
+        List<String> result = new ArrayList<>();
+        for(Object v: searches.values()) {
+            if(v instanceof String) {
+                result.add((String) v);
+            } else if(v instanceof Map) {
+                List<String> resultInternal = extractUrlsWithStuns((Map) v);
+
+                    result.addAll(resultInternal);
+            }
+        }
+        return result;
     }
 
     @SneakyThrows
