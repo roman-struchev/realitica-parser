@@ -39,7 +39,7 @@ public class RealoticaLoader {
     @Scheduled(fixedDelay = 1000 * 60 * 60)
     public void load() {
         Map<String, Object> searchesByCitiesAndAreas
-                = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/");
+                = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/", null);
         searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
                 .filter(e -> CITIES.contains(e.getKey()))
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
@@ -52,24 +52,28 @@ public class RealoticaLoader {
     }
 
     @SneakyThrows
-    private Map<String, Object> loadSearchesByCitiesAndAreas(String rootUrl) {
+    private Map<String, Object> loadSearchesByCitiesAndAreas(String rootUrl, String city) {
         Map<String, Object> searches = new LinkedHashMap<>();
         Document pageDoc = Jsoup.connect(rootUrl).get();
         Elements areasElements = pageDoc.select("#search_col2 span.geosel");
+
+        if (city != null) {
+            searches.put("All", "https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=" + city);
+        }
         for (Element element : areasElements) {
-            String area = element.text();
-            if (StringUtils.isEmpty(area)) {
+            String current = element.text();
+            if (StringUtils.isEmpty(current)) {
                 continue;
-            } else {
-                area = area.split(" \\(")[0].trim().replace(" ", "+");
             }
 
-            String search = element.child(0).attr("href");
-            if (element.child(0).childNodeSize() > 1 || area.equals("Budva")) {
-                Map<String, Object> searchesInternal = loadSearchesByCitiesAndAreas(search);
-                searches.put(area, searchesInternal);
+            current = current.split(" \\(")[0].trim().replace(" ", "+");
+
+            String linkToChild = element.child(0).attr("href");
+            if (element.child(0).childNodeSize() > 1 || current.equals("Budva")) {
+                Map<String, Object> searchesInternal = loadSearchesByCitiesAndAreas(linkToChild, city == null ? current : city);
+                searches.put(current, searchesInternal);
             } else {
-                searches.put(area, search);
+                searches.put(current, "https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=" + city + "&cty=" + current);
             }
         }
         return searches;
@@ -77,13 +81,12 @@ public class RealoticaLoader {
 
     private List<String> extractUrlsWithStuns(Map<String, Object> searches) {
         List<String> result = new ArrayList<>();
-        for(Object v: searches.values()) {
-            if(v instanceof String) {
-                result.add((String) v);
-            } else if(v instanceof Map) {
-                List<String> resultInternal = extractUrlsWithStuns((Map) v);
-
-                    result.addAll(resultInternal);
+        for (Map.Entry<String, Object> e : searches.entrySet()) {
+            if (e.getValue() instanceof String) {
+                result.add((String) e.getValue());
+            } else if (e.getValue() instanceof Map) {
+                List<String> resultInternal = extractUrlsWithStuns((Map) e.getValue());
+                result.addAll(resultInternal);
             }
         }
         return result;
@@ -181,11 +184,13 @@ public class RealoticaLoader {
     private void saveStun(String id, int repeats) {
         try {
             if (repeats < 0) {
+                log.error("Will be not repeat for {}", id);
                 return;
             }
 
             Map<String, String> attributesMap = loadStunAttributes(id, 1);
             if (attributesMap == null) {
+                log.error("Attributes is empty for {}", id);
                 return;
             }
 
@@ -193,7 +198,7 @@ public class RealoticaLoader {
             try {
                 lastMobified = attributesMap.get("Last Modified") != null ? SDF.parse(attributesMap.get("Last Modified")) : null;
             } catch (ParseException e) {
-                log.error("can't parse data {}, {}", id, attributesMap.get("Last Modified"));
+                log.error("Can't parse data {}, {}", id, attributesMap.get("Last Modified"));
             }
 
             Stun stun = stunRepository.findByRealiticaId(id);
