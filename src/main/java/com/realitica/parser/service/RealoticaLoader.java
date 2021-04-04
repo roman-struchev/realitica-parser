@@ -41,7 +41,7 @@ public class RealoticaLoader {
         Map<String, Object> searchesByCitiesAndAreas
                 = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/", null);
         searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
-                .filter(e -> CITIES.contains(e.getKey()))
+                .filter(e -> CITIES.isEmpty() || CITIES.contains(e.getKey()))
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
         List<String> searches = extractUrlsWithStuns(searchesByCitiesAndAreas);
         searches.forEach(urlWithStuns -> {
