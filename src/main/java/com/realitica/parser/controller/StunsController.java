@@ -21,13 +21,13 @@ import java.util.Map;
 public class StunsController {
     private final StunRepository stunRepository;
 
-    @GetMapping(path = "stuns")
+    @GetMapping(path = {"/", "/stuns"})
     public ModelAndView stuns(@RequestHeader String host,
                               @RequestParam(name = "redirect", defaultValue = "false") Boolean redirect) {
         // 302 redirect from deprecated domaim
         if (redirect != null && redirect && host.contains("heroku")) {
             log.info("Request from {}, redirect to realitica.struchev.site", host);
-            return new ModelAndView("redirect:/realitica.struchev.site");
+            return new ModelAndView("redirect:http://realitica.struchev.site");
         } else {
             log.info("Request from {}, use this host", host);
         }
