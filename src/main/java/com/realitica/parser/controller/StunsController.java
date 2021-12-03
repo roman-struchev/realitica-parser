@@ -32,8 +32,8 @@ public class StunsController {
             log.info("Request from {}, use this host", host);
         }
 
-        List<Stun> stunsList = stunRepository.findAll(Sort.by(Sort.Direction.DESC, "lastModified"));
-        Map attributes = new HashMap<>();
+        var stunsList = stunRepository.findAll(Sort.by(Sort.Direction.DESC, "lastModified"));
+        var attributes = new HashMap<String, Object>();
         attributes.put("stuns", stunsList);
         return new ModelAndView("stuns", attributes);
     }

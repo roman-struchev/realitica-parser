@@ -5,8 +5,8 @@ plugins {
 }
 
 group = 'com.realitica'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '8'
+version = '1.0.0'
+sourceCompatibility = '11'
 
 configurations {
 	compileOnly {
