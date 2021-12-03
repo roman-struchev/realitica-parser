@@ -6,8 +6,9 @@ services:
     container_name: realitica-app
     network_mode: host
     ports:
-      - 10000:80
+      - 10001:10001
     environment:
+      - server.port=10001
       - spring.datasource.driverClassName=org.postgresql.Driver
       - spring.datasource.url=jdbc:postgresql://127.0.0.1:5432/realitica
       - spring.datasource.username=${POSTGRES_USER}
