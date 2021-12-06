@@ -23,7 +23,7 @@ public class StunsController {
 
     @GetMapping(path = {"/", "/stuns"})
     public ModelAndView stuns(@RequestHeader String host,
-                              @RequestParam(name = "redirect", defaultValue = "false") Boolean redirect) {
+                              @RequestParam(name = "redirect", defaultValue = "true") Boolean redirect) {
         // 302 redirect from deprecated domaim
         if (redirect != null && redirect && host.contains("heroku")) {
             log.info("Request from {}, redirect to realitica.struchev.site", host);
