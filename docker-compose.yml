@@ -11,4 +11,4 @@ services:
       - spring.datasource.url=jdbc:postgresql://127.0.0.1:5432/realitica
       - spring.datasource.username=${POSTGRES_USER}
       - spring.datasource.password=${POSTGRES_PASSWORD}
-    mem_limit: 256m
+    mem_limit: 384m
