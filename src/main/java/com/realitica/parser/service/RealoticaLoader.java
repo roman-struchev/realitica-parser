@@ -36,7 +36,7 @@ public class RealoticaLoader {
     @Autowired
     StunRepository stunRepository;
 
-    @Scheduled(fixedDelay = 1000 * 60 * 60)
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 6)
     public void load() {
         Map<String, Object> searchesByCitiesAndAreas
                 = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/", null);
