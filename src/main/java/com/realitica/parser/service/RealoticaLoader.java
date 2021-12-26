@@ -29,7 +29,7 @@ public class RealoticaLoader {
     @Value("${realitica.url:https://www.realitica.com/en}")
     private String REALITICA_URL;
 
-    private List<String> CITIES = Arrays.asList("Podgorica", "Bar");
+    private List<String> CITIES = Arrays.asList();
 
     private final SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
 
