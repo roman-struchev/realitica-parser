@@ -188,9 +188,14 @@ public class RealoticaLoader {
                 return;
             }
 
+            Stun stun = stunRepository.findByRealiticaId(id);
             Map<String, String> attributesMap = loadStunAttributes(id, 1);
-            if (attributesMap == null) {
-                log.error("Attributes is empty for {}", id);
+            if (attributesMap == null || attributesMap.isEmpty()) {
+                if(stun != null) {
+                    log.error("Attributes is empty for {}. Stun {} will be removed from DB", id, stun.getId());
+                    stunRepository.delete(stun);
+                }
+                log.error("Attributes is empty for {}. Stun will be skipped, not founded in DB", id);
                 return;
             }
 
@@ -201,7 +206,6 @@ public class RealoticaLoader {
                 log.error("Can't parse data {}, {}", id, attributesMap.get("Last Modified"));
             }
 
-            Stun stun = stunRepository.findByRealiticaId(id);
             if (stun == null) {
                 stun = new Stun();
                 stun.setRealiticaId(id);
