@@ -30,10 +30,8 @@ public class Stun {
     private String link;
 
     @CreationTimestamp
-    @Column(name = "status_updated")
     private OffsetDateTime created;
 
     @UpdateTimestamp
-    @Column(name = "updated")
     private OffsetDateTime updated;
 }
