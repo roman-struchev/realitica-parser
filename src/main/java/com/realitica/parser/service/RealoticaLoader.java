@@ -37,7 +37,7 @@ public class RealoticaLoader {
     StunRepository stunRepository;
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 6)
-    public void load() {
+    public void loadFromRealitica() {
         Map<String, Object> searchesByCitiesAndAreas
                 = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/", null);
         searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
@@ -191,7 +191,7 @@ public class RealoticaLoader {
             Stun stun = stunRepository.findByRealiticaId(id);
             Map<String, String> attributesMap = loadStunAttributes(id, 1);
             if (attributesMap == null || attributesMap.isEmpty()) {
-                if(stun != null) {
+                if (stun != null) {
                     log.error("Attributes is empty for {}. Stun {} will be removed from DB", id, stun.getId());
                     stunRepository.delete(stun);
                 }

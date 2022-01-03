@@ -2,11 +2,11 @@ package com.realitica.parser.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 import java.util.Date;
 
 @Entity
@@ -28,4 +28,12 @@ public class Stun {
     private String moreInfo;
     private Date lastModified;
     private String link;
+
+    @CreationTimestamp
+    @Column(name = "status_updated")
+    private OffsetDateTime statusUpdated;
+
+    @UpdateTimestamp
+    @Column(name = "updated")
+    private OffsetDateTime updated;
 }
