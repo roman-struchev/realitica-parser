@@ -231,7 +231,7 @@ public class RealoticaLoader {
             stun.setDistrict(attributesMap.get("District"));
             stun.setLocation(attributesMap.get("Location"));
             stun.setAddress(attributesMap.get("Address"));
-            stun.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replace("€", "") : null);
+            stun.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replace("€", "").replace(".", "") : null);
             stun.setBedrooms(attributesMap.get("Bedrooms"));
             stun.setLivingArea(attributesMap.get("Living Area"));
             stun.setMoreInfo(attributesMap.get("More info at"));

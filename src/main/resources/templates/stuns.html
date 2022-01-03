@@ -44,7 +44,7 @@
     <tbody>
     <tr th:each="s: ${stuns}">
         <td th:text="${s.district}"/>
-        <td th:text="${s.district} + '/' + ${s.location}"/>
+        <td th:text="${s.district}  + ${s.location == null ? '' : '/' + s.location}"/>
         <td th:text="${s.type}"/>
         <td th:text="${s.bedrooms}"/>
         <td th:text="${s.livingArea}"/>
