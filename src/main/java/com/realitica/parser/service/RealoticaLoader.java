@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ public class RealoticaLoader {
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 6)
     public void loadFromRealitica() {
+        log.info("Start scheduler loadFromRealitica");
         Map<String, Object> searchesByCitiesAndAreas
                 = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/", null);
         searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
@@ -49,6 +51,21 @@ public class RealoticaLoader {
             HashSet<String> ids = loadIdsBySearch(urlWithStuns);
             ids.stream().forEach(id -> saveStun(id, 1));
         });
+    }
+
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 24 * 7)
+    public void removeDeprecated() {
+        log.info("Start scheduler removeDeprecated");
+        OffsetDateTime deprecatedDate = OffsetDateTime.now().minusMonths(2);
+        List<Stun> deprecatedStuns = stunRepository.findAll().stream()
+                .filter(s -> s.getUpdated() == null || s.getUpdated().isBefore(deprecatedDate))
+                .parallel()
+                .filter(s -> {
+                    Map<String, String> attributesMap = loadStunAttributes(s.getRealiticaId(), 1);
+                    return attributesMap == null || attributesMap.isEmpty();
+                })
+                .collect(Collectors.toList());
+        stunRepository.deleteAll(deprecatedStuns);
     }
 
     @SneakyThrows
