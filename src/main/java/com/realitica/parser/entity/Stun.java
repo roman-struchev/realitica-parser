@@ -31,7 +31,7 @@ public class Stun {
 
     @CreationTimestamp
     @Column(name = "status_updated")
-    private OffsetDateTime statusUpdated;
+    private OffsetDateTime created;
 
     @UpdateTimestamp
     @Column(name = "updated")
