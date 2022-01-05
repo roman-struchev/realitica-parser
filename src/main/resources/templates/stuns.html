@@ -88,7 +88,7 @@
                                 return !rowData[5] || parseFloat(rowData[5]) <= p;
                             }
                         })).concat(
-                            [200, 300, 400, 500].map(p => ({
+                            [200, 300, 400, 500, 800, 1000].map(p => ({
                                 label: '>= ' + p,
                                 value: function (rowData, rowIdx) {
                                     return !rowData[5] || parseFloat(rowData[5]) >= p;
