@@ -1,7 +1,7 @@
 package com.realitica.parser.service;
 
 import com.realitica.parser.entity.AdEntity;
-import com.realitica.parser.repo.AdRepository;
+import com.realitica.parser.repository.AdRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
