@@ -1,7 +1,6 @@
 package com.realitica.parser.controller;
 
-import com.realitica.parser.entity.Stun;
-import com.realitica.parser.repo.StunRepository;
+import com.realitica.parser.repo.AdRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -11,30 +10,24 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Controller
-public class StunsController {
-    private final StunRepository stunRepository;
+public class AdController {
+    private final AdRepository adRepository;
 
     @GetMapping(path = {"/", "/stuns"})
-    public ModelAndView stuns(@RequestHeader String host,
+    public ModelAndView ad(@RequestHeader String host,
                               @RequestParam(name = "redirect", defaultValue = "true") Boolean redirect) {
-        // 302 redirect from deprecated domaim
+        // 302 redirect from deprecated heroku host
         if (redirect != null && redirect && host.contains("heroku")) {
-            log.info("Request from {}, redirect to realitica.struchev.site", host);
             return new ModelAndView("redirect:http://realitica.struchev.site");
-        } else {
-            log.info("Request from {}, use this host", host);
         }
 
-        List<Stun> stunsList = stunRepository.findAll(Sort.by(Sort.Direction.DESC, "lastModified"));
-        Map attributes = new HashMap<>();
-        attributes.put("stuns", stunsList);
-        return new ModelAndView("stuns", attributes);
+        var stunsList = adRepository.findAll(Sort.by(Sort.Direction.DESC, "lastModified"));
+        var attributes = Map.of("ads", stunsList);
+        return new ModelAndView("ads", attributes);
     }
 }

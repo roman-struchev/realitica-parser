@@ -29,11 +29,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Copy docker-compose.yml
+    - name: Copy docker-compose-live.yml
       uses: garygrossgarten/github-action-scp@release
       with:
-        local: docker-compose.yml
-        remote: ./realitica/docker-compose.yml
+        local: docker-compose-live.yml
+        remote: ./realitica/docker-compose-live.yml
         host: 193.17.92.2
         username: root
         privateKey: ${{ secrets.SSH_PRIVATE_KEY_ZTV }}
@@ -48,6 +48,6 @@ jobs:
           cd realitica
           export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
           export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          docker-compose down
-          docker-compose pull
-          docker-compose up -d
+          docker-compose -f docker-compose-live.yml down
+          docker-compose -f docker-compose-live.yml pull
+          docker-compose -f docker-compose-live.yml up -d

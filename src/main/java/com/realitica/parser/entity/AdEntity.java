@@ -12,7 +12,7 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-public class Stun {
+public class AdEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

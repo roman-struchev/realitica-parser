@@ -1,7 +1,27 @@
-Endpoint https://realitica-parser.herokuapp.com/api/stuns
+# Motivation
+The https://realtica.com is an aggregator of ads in Montenegro and other countries, but there is a lot of not actual ads and no ability to sort by `update date` attribute and filter by some of the attributes.
 
-Heroku has 10000 rows restroction for posgresql
+This project was created as a parser of Montenegro rental ads from https://realtica.com to provide more flexible and convenient access to ads.
+
+# Web
+The project available by http://realitica.struchev.site
+
+# Run locally
+### Using gradlew
+1. Install jdk 11
+2. Execute
+```shell
+./gradlew bootRun
 ```
-delete from stun s where s.last_modified < TO_TIMESTAMP('2021-10-01 9:30:20', 'YYYY-MM-DD HH:MI:SS');
-commit;
+3. Open http://localhost
+### Using docker
+1. Install docker
+2. Execute
+```shell
+docker run -v $PWD/data:./data -p 80:80 --rm romanew/realitica:latest
 ```
+3. Open http://localhost
+
+# Details
+The data storage is a local h2 file database by default.
+When the application starts, it goes to load ads from https://realitica.com. Also, ads reload every 6 hours

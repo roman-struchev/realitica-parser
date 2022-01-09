@@ -1,16 +1,13 @@
 package com.realitica.parser.service;
 
-import com.realitica.parser.entity.Stun;
-import com.realitica.parser.repo.StunRepository;
+import com.realitica.parser.entity.AdEntity;
+import com.realitica.parser.repo.AdRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
-import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,59 +22,64 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class RealoticaLoader {
+@RequiredArgsConstructor
+public class RealiticaLoader {
 
-    @Value("${realitica.url:https://www.realitica.com/en}")
-    private String REALITICA_URL;
+    private final AdRepository adRepository;
 
-    private List<String> CITIES = Arrays.asList();
-
-    private final SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
-
-    @Autowired
-    StunRepository stunRepository;
+    @Value("${realitica.url:https://www.realitica.com}")
+    private String realiticaUrl;
+    private List<String> CITIES_FILTER = List.of();
+    private final static SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 6)
     public void loadFromRealitica() {
         log.info("Start scheduler loadFromRealitica");
-        Map<String, Object> searchesByCitiesAndAreas
-                = loadSearchesByCitiesAndAreas("https://www.realitica.com/rentals/Montenegro/", null);
+        var searchesByCitiesAndAreas
+                = loadSearchesByCitiesAndAreas(realiticaUrl + "/rentals/Montenegro/", null);
         searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
-                .filter(e -> CITIES.isEmpty() || CITIES.contains(e.getKey()))
+                .filter(e -> CITIES_FILTER.isEmpty() || CITIES_FILTER.contains(e.getKey()))
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
-        List<String> searches = extractUrlsWithStuns(searchesByCitiesAndAreas);
-        searches.forEach(urlWithStuns -> {
-            log.info("Start to load by filter: {}", urlWithStuns);
-            HashSet<String> ids = loadIdsBySearch(urlWithStuns);
-            ids.stream().forEach(id -> saveStun(id, 1));
+        var searches = extractFlatSearchUrlList(searchesByCitiesAndAreas);
+        searches.forEach(urlWithAd -> {
+            log.info("Start to load by filter: {}", urlWithAd);
+            var ids = loadIdsBySearch(urlWithAd);
+            ids.stream().forEach(id -> loadAdAndSave(id, 1));
         });
     }
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 24 * 7)
     public void removeDeprecated() {
         log.info("Start scheduler removeDeprecated");
-        OffsetDateTime deprecatedDate = OffsetDateTime.now().minusMonths(2);
-        List<Stun> deprecatedStuns = stunRepository.findAll().stream()
+        var deprecatedDate = OffsetDateTime.now().minusMonths(2);
+        var deprecatedAdEntities = adRepository.findAll().stream()
                 .filter(s -> s.getUpdated() == null || s.getUpdated().isBefore(deprecatedDate))
                 .parallel()
                 .filter(s -> {
-                    Map<String, String> attributesMap = loadStunAttributes(s.getRealiticaId(), 1);
+                    Map<String, String> attributesMap = loadAdAttributes(s.getRealiticaId(), 1);
                     return attributesMap == null || attributesMap.isEmpty();
                 })
                 .collect(Collectors.toList());
-        stunRepository.deleteAll(deprecatedStuns);
+        adRepository.deleteAll(deprecatedAdEntities);
     }
 
+    /**
+     * Recursively collect urls of search urls
+     *
+     * @param rootUrl
+     * @param city
+     * @return
+     */
     @SneakyThrows
     private Map<String, Object> loadSearchesByCitiesAndAreas(String rootUrl, String city) {
-        Map<String, Object> searches = new LinkedHashMap<>();
-        Document pageDoc = Jsoup.connect(rootUrl).get();
-        Elements areasElements = pageDoc.select("#search_col2 span.geosel");
+        var searches = new LinkedHashMap<String, Object>();
+        var pageDoc = Jsoup.connect(rootUrl).get();
+        var areasElements = pageDoc.select("#search_col2 span.geosel");
 
         if (city != null) {
             searches.put("All", "https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=" + city);
         }
-        for (Element element : areasElements) {
+        for (var element : areasElements) {
             String current = element.text();
             if (StringUtils.isEmpty(current)) {
                 continue;
@@ -85,7 +87,7 @@ public class RealoticaLoader {
 
             current = current.split(" \\(")[0].trim().replace(" ", "+");
 
-            String linkToChild = element.child(0).attr("href");
+            var linkToChild = element.child(0).attr("href");
             if (element.child(0).childNodeSize() > 1 || current.equals("Budva")) {
                 Map<String, Object> searchesInternal = loadSearchesByCitiesAndAreas(linkToChild, city == null ? current : city);
                 searches.put(current, searchesInternal);
@@ -96,46 +98,58 @@ public class RealoticaLoader {
         return searches;
     }
 
-    private List<String> extractUrlsWithStuns(Map<String, Object> searches) {
-        List<String> result = new ArrayList<>();
-        for (Map.Entry<String, Object> e : searches.entrySet()) {
+    /**
+     * recursively collect urls for ad
+     *
+     * @param searches
+     * @return
+     */
+    private List<String> extractFlatSearchUrlList(Map<String, Object> searches) {
+        var result = new ArrayList<String>();
+        for (var e : searches.entrySet()) {
             if (e.getValue() instanceof String) {
                 result.add((String) e.getValue());
             } else if (e.getValue() instanceof Map) {
-                List<String> resultInternal = extractUrlsWithStuns((Map) e.getValue());
+                var resultInternal = extractFlatSearchUrlList((Map) e.getValue());
                 result.addAll(resultInternal);
             }
         }
         return result;
     }
 
+    /**
+     * Load ids of ad from search
+     *
+     * @param urlWithAds
+     * @return
+     */
     @SneakyThrows
-    private HashSet loadIdsBySearch(String urlWithStuns) {
-        HashSet<String> ids = new LinkedHashSet<>();
+    private HashSet<String> loadIdsBySearch(String urlWithAds) {
+        var ids = new LinkedHashSet<String>();
 
         int curPage = 0;
         while (curPage >= 0) {
             try {
-                String url = urlWithStuns + "&cur_page=" + curPage;
-                Document pageDoc = Jsoup.connect(url).get();
-                Elements stunElements = pageDoc.select("div.thumb_div > a");
-                if (stunElements.size() == 0) {
-                    log.info("Last page {}", curPage + 1);
+                var url = urlWithAds + "&cur_page=" + curPage;
+                var pageDoc = Jsoup.connect(url).get();
+                var adElements = pageDoc.select("div.thumb_div > a");
+                if (adElements.size() == 0) {
+                    log.info("Last page {} of {}", curPage + 1, urlWithAds);
                     curPage = -1;
                     continue;
                 } else {
-                    log.info("Loaded page {}", curPage + 1);
+                    log.info("Loaded page {} of {}", curPage + 1, urlWithAds);
                     curPage++;
                 }
 
-                List<String> listIds = stunElements.stream()
+                var listIds = adElements.stream()
                         .map(el -> el.attr("href"))
                         .filter(link -> link.startsWith("https://www.realitica.com/en/listing/"))
                         .map(link -> link.replace("https://www.realitica.com/en/listing/", ""))
                         .collect(Collectors.toList());
                 ids.addAll(listIds);
             } catch (Throwable th) {
-                log.error("Can't load page with stuns, goes to sleep", th);
+                log.error("Can't load page with ad, goes to sleep 1s: " + urlWithAds, th);
                 Thread.sleep(1000);
             }
         }
@@ -166,22 +180,22 @@ public class RealoticaLoader {
      * @throws IOException
      */
     @SneakyThrows
-    public Map<String, String> loadStunAttributes(String id, int repeats) {
+    public Map<String, String> loadAdAttributes(String id, int repeats) {
         if (repeats < 0) {
             return null;
         }
 
         try {
-            log.info("Loading stun {}", id);
+            log.info("Loading ad {}", id);
 
-            Document doc = Jsoup.connect(REALITICA_URL + "/listing/" + id).get();
-            Map<String, String> attributesMap = new LinkedHashMap();
+            var doc = Jsoup.connect(realiticaUrl + "/en/listing/" + id).get();
+            var attributesMap = new LinkedHashMap<String, String>();
 
-            Elements parentElements = doc.select("div");
+            var parentElements = doc.select("div");
             for (Element parentElement : parentElements) {
-                List<Node> nodes = parentElement.childNodes();
+                var nodes = parentElement.childNodes();
                 for (int i = 0; i < nodes.size(); i++) {
-                    Node node = nodes.get(i);
+                    var node = nodes.get(i);
                     if (node instanceof Element) {
                         Element el = (Element) node;
                         if (Tag.valueOf("strong").equals(el.tag()) && i < nodes.size() - 1 && nodes.get(i + 1).toString().startsWith(": ")) {
@@ -192,25 +206,31 @@ public class RealoticaLoader {
             }
             return attributesMap;
         } catch (Throwable th) {
-            log.error("Can't load stun {}", id, th);
+            log.error("Can't load ad {}", id, th);
             Thread.sleep(1000);
-            return loadStunAttributes(id, repeats - 1);
+            return loadAdAttributes(id, repeats - 1);
         }
     }
 
-    private void saveStun(String id, int repeats) {
+    /**
+     * load and save ad by id to db
+     *
+     * @param id
+     * @param repeats
+     */
+    private void loadAdAndSave(String id, int repeats) {
         try {
             if (repeats < 0) {
                 log.error("Will be not repeat for {}", id);
                 return;
             }
 
-            Stun stun = stunRepository.findByRealiticaId(id);
-            Map<String, String> attributesMap = loadStunAttributes(id, 1);
+            var adEntity = adRepository.findByRealiticaId(id);
+            var attributesMap = loadAdAttributes(id, 1);
             if (attributesMap == null || attributesMap.isEmpty()) {
-                if (stun != null) {
-                    log.error("Attributes is empty for {}. Stun {} will be removed from DB", id, stun.getId());
-                    stunRepository.delete(stun);
+                if (adEntity != null) {
+                    log.error("Attributes is empty for {}. Stun {} will be removed from DB", id, adEntity.getId());
+                    adRepository.delete(adEntity);
                 }
                 log.error("Attributes is empty for {}. Stun will be skipped, not founded in DB", id);
                 return;
@@ -223,22 +243,22 @@ public class RealoticaLoader {
                 log.error("Can't parse data {}, {}", id, attributesMap.get("Last Modified"));
             }
 
-            if (stun == null) {
-                stun = new Stun();
-                stun.setRealiticaId(id);
+            if (adEntity == null) {
+                adEntity = new AdEntity();
+                adEntity.setRealiticaId(id);
             }
-            stun.setType(attributesMap.get("Type"));
-            stun.setDistrict(attributesMap.get("District"));
-            stun.setLocation(attributesMap.get("Location"));
-            stun.setAddress(attributesMap.get("Address"));
-            stun.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replace("€", "").replace(".", "") : null);
-            stun.setBedrooms(attributesMap.get("Bedrooms"));
-            stun.setLivingArea(attributesMap.get("Living Area"));
-            stun.setMoreInfo(attributesMap.get("More info at"));
-            stun.setLastModified(lastMobified);
-            stun.setType(attributesMap.get("Type"));
-            stun.setLink(REALITICA_URL + "/listing/" + id);
-            stunRepository.save(stun);
+            adEntity.setType(attributesMap.get("Type"));
+            adEntity.setDistrict(attributesMap.get("District"));
+            adEntity.setLocation(attributesMap.get("Location"));
+            adEntity.setAddress(attributesMap.get("Address"));
+            adEntity.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replace("€", "").replace(".", "") : null);
+            adEntity.setBedrooms(attributesMap.get("Bedrooms"));
+            adEntity.setLivingArea(attributesMap.get("Living Area"));
+            adEntity.setMoreInfo(attributesMap.get("More info at"));
+            adEntity.setLastModified(lastMobified);
+            adEntity.setType(attributesMap.get("Type"));
+            adEntity.setLink(realiticaUrl + "/en/listing/" + id);
+            adRepository.save(adEntity);
             log.info("Save stun {}", id);
         } catch (Throwable th) {
             log.error("Can't save stun {}", id);
