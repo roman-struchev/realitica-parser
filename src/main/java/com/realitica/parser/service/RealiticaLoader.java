@@ -32,7 +32,7 @@ public class RealiticaLoader {
     private List<String> CITIES_FILTER = List.of();
     private final static SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
 
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 6)
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 2)
     public void loadFromRealitica() {
         log.info("Start scheduler loadFromRealitica");
         var searchesByCitiesAndAreas
