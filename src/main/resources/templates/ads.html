@@ -92,13 +92,13 @@
                     },
                     {
                         header: 'Price range',
-                        options: [200, 300, 400, 500, 600, 700, 800, 1000].map(p => ({
+                        options: [200, 300, 400, 500, 600, 700, 800, 1000, 1200].map(p => ({
                             label: '<= ' + p,
                             value: function (rowData, rowIdx) {
                                 return !rowData[5] || parseFloat(rowData[5]) <= p;
                             }
                         })).concat(
-                            [200, 300, 400, 500].map(p => ({
+                            [200, 300, 400, 500, 600].map(p => ({
                                 label: '>= ' + p,
                                 value: function (rowData, rowIdx) {
                                     return !rowData[5] || parseFloat(rowData[5]) >= p;
