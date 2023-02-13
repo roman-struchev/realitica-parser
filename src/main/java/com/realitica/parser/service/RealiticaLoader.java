@@ -77,7 +77,8 @@ public class RealiticaLoader {
         var areasElements = pageDoc.select("#search_col2 span.geosel");
 
         if (city != null) {
-            searches.put("All", "https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=" + city);
+            searches.put("All-Rental", "https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=" + city);
+            searches.put("All-Sale", "https://www.realitica.com/index.php?for=Prodaja&lng=en&opa=" + city);
         }
         for (var element : areasElements) {
             String current = element.text();
@@ -93,6 +94,7 @@ public class RealiticaLoader {
                 searches.put(current, searchesInternal);
             } else {
                 searches.put(current, "https://www.realitica.com/index.php?for=DuziNajam&lng=en&opa=" + city + "&cty=" + current);
+                searches.put(current, "https://www.realitica.com/index.php?for=Prodaja&lng=en&opa=" + city + "&cty=" + current);
             }
         }
         return searches;
