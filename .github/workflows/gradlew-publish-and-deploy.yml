@@ -48,6 +48,7 @@ jobs:
             cd realitica
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
             docker-compose -f docker-compose-live.yml down
             docker-compose -f docker-compose-live.yml pull
             docker-compose -f docker-compose-live.yml up -d
