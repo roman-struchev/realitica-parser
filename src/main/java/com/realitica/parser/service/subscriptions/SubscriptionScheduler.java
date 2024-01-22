@@ -65,10 +65,11 @@ public class SubscriptionScheduler {
                         var groupTitle = e.getKey();
                         var groupBody = e.getValue().stream()
                                 .map(a -> {
+                                    var location = StringUtils.defaultString(a.getLocation(), "?");
                                     var livingArea = StringUtils.defaultString(a.getLivingArea(), "?");
                                     var price = StringUtils.defaultString(a.getPrice(), "?");
                                     return String.format("%s. %s, %s, %s, %se, [%s](%s)", index.getAndIncrement(),
-                                            a.getDistrict(), a.getLocation(), livingArea, price, a.getRealiticaId(), a.getLink());
+                                            a.getDistrict(), location, livingArea, price, a.getRealiticaId(), a.getLink());
                                 })
                                 .collect(Collectors.joining("\n"));
                         return String.format("%s\n%s", groupTitle, groupBody);
