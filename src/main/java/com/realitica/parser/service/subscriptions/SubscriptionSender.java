@@ -39,19 +39,22 @@ public class SubscriptionSender {
 
     @PostConstruct
     private void init() {
-        if (StringUtils.isNotEmpty(telegramBotToken)) {
-            this.bot = new TelegramBot(telegramBotToken);
-            this.bot.setUpdatesListener(updates -> {
-                updates.stream().forEach(update -> {
-                    var chatId = update.message().chat().id();
-                    var messageIn = update.message().text();
-                    if (messageIn != null) {
-                        var messageOut = String.format("Your chat id: %s", chatId, messageIn);
-                        bot.execute(new SendMessage(update.message().chat().id(), messageOut));
-                    }
-                });
-                return UpdatesListener.CONFIRMED_UPDATES_ALL;
-            });
+        if (StringUtils.isEmpty(telegramBotToken)) {
+            log.info("Telegram bot token not filled");
+            return;
         }
+
+        this.bot = new TelegramBot(telegramBotToken);
+        this.bot.setUpdatesListener(updates -> {
+            updates.stream().forEach(update -> {
+                var chatId = update.message().chat().id();
+                if (update.message().text() != null) {
+                    var messageOut = String.format("Your chat id: %s", chatId);
+                    bot.execute(new SendMessage(update.message().chat().id(), messageOut));
+                }
+            });
+            return UpdatesListener.CONFIRMED_UPDATES_ALL;
+        });
+
     }
 }
