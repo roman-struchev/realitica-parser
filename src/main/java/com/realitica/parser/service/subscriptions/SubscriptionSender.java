@@ -44,6 +44,8 @@ public class SubscriptionSender {
             return;
         }
 
+
+        log.info("Telegram bot token filled: {}", telegramBotToken);
         this.bot = new TelegramBot(telegramBotToken);
         this.bot.setUpdatesListener(updates -> {
             updates.stream().forEach(update -> {
