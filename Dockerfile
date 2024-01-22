@@ -1,3 +1,3 @@
-FROM openjdk:11.0.4-jre-slim
+FROM openjdk:17-alpine
 COPY ./build/libs/parser-*.jar application.jar
 ENTRYPOINT ["java", "-jar", "application.jar"]

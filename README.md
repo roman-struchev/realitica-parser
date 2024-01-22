@@ -8,7 +8,7 @@ The project available by http://realitica.struchev.site
 
 # Run locally
 ### Using gradlew
-1. Install jdk 11
+1. Install jdk 17
 2. Execute
 ```shell
 ./gradlew bootRun
