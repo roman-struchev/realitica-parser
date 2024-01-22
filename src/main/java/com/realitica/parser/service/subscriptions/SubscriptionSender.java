@@ -44,15 +44,15 @@ public class SubscriptionSender {
             return;
         }
 
-
-        log.info("Telegram bot token filled: {}", telegramBotToken);
         this.bot = new TelegramBot(telegramBotToken);
         this.bot.setUpdatesListener(updates -> {
             updates.stream().forEach(update -> {
                 var chatId = update.message().chat().id();
-                if (update.message().text() != null) {
-                    var messageOut = String.format("Your chat id: %s", chatId);
-                    bot.execute(new SendMessage(update.message().chat().id(), messageOut));
+                var message = update.message().text();
+                if (message != null) {
+                    log.info("Telegram {} message {}", chatId, message);
+                    var response = String.format("Your chat id: %s", chatId);
+                    bot.execute(new SendMessage(update.message().chat().id(), response));
                 }
             });
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
