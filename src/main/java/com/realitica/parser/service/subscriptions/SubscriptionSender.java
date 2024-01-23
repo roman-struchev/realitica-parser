@@ -51,7 +51,7 @@ public class SubscriptionSender {
                 var message = update.message().text();
                 if (message != null) {
                     log.info("Telegram group {}, message: {}", chatId, message);
-                    var response = String.format("Your chat id: %s\nOriginal message:", chatId, message);
+                    var response = String.format("Your chat id: %s\nOriginal message: %s", chatId, message);
                     bot.execute(new SendMessage(update.message().chat().id(), response));
                 }
             });
