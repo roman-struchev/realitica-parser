@@ -3,7 +3,7 @@ version: '3'
 services:
   realitica-app:
     image: 'romanew/realitica:latest'
-    container_name: realitica-app
+    container_name: realitica
     network_mode: host
     environment:
       - server.port=10001

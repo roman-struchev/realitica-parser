@@ -11,11 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -38,7 +36,7 @@ public class SubscriptionScheduler {
 
         var dateFrom = OffsetDateTime.now().minusDays(1);
         var updatedAds = adRepository.findAllByLastModifiedIsAfter(new Date(dateFrom.toInstant().toEpochMilli()),
-                Sort.by( "type", "location", "livingArea", "price"));
+                Sort.by("type", "location", "livingArea", "price"));
 
         subscriptionsConfiguration.getSubscriptions().forEach(s -> {
             var adsToSend = updatedAds.stream()
@@ -103,5 +101,6 @@ public class SubscriptionScheduler {
     @PostConstruct
     private void init() {
         log.info("Subscriptions: {}", subscriptionsConfiguration);
+        sendSubscriptions();
     }
 }
