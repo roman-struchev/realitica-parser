@@ -1,5 +1,6 @@
 package com.realitica.parser.service.subscriptions;
 
+import com.realitica.parser.entity.AdEntity;
 import com.realitica.parser.repository.AdRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.PostConstruct;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -55,7 +55,7 @@ public class SubscriptionScheduler {
                 return;
             }
 
-            var adsToSendByGroups = adsToSend.stream().collect(Collectors.groupingBy(a -> a.getType(), Collectors.toList()));
+            var adsToSendByGroups = adsToSend.stream().collect(Collectors.groupingBy(AdEntity::getType, Collectors.toList()));
             var messageBody = adsToSendByGroups.entrySet().stream()
                     .filter(e -> !e.getValue().isEmpty())
                     .map(e -> {
@@ -96,11 +96,5 @@ public class SubscriptionScheduler {
             log.error("Can't compare {} with {}", filter, value, ex);
             return 0;
         }
-    }
-
-    @PostConstruct
-    private void init() {
-        log.info("Subscriptions: {}", subscriptionsConfiguration);
-        sendSubscriptions();
     }
 }
