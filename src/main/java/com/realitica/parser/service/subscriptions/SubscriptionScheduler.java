@@ -63,9 +63,9 @@ public class SubscriptionScheduler {
                         var groupTitle = e.getKey();
                         var groupBody = e.getValue().stream()
                                 .map(a -> {
-                                    var location = StringUtils.defaultString(a.getLocation(), "?");
-                                    var livingArea = StringUtils.defaultString(a.getLivingArea(), "?");
-                                    var price = StringUtils.defaultString(a.getPrice(), "?");
+                                    var location = StringUtils.defaultIfBlank(a.getLocation(), "?");
+                                    var livingArea = StringUtils.defaultIfBlank(a.getLivingArea(), "?");
+                                    var price = StringUtils.defaultIfBlank(a.getPrice(), "?");
                                     return String.format("%s. %s, %s, %s, %se, [%s](%s)", index.getAndIncrement(),
                                             a.getDistrict(), location, livingArea, price, a.getRealiticaId(), a.getLink());
                                 })
@@ -81,9 +81,9 @@ public class SubscriptionScheduler {
     /**
      * Not int value in DB, try to parse as integer
      *
-     * @param filter
-     * @param value
-     * @return
+     * @param filter value from filter
+     * @param value  value from ad
+     * @return -1, 0, 1
      */
     private int compareUnits(Integer filter, String value) {
         try {
