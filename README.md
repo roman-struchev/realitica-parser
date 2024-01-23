@@ -4,11 +4,11 @@ The https://realtica.com is an aggregator of ads in Montenegro and other countri
 This project was created as a parser of Montenegro rental ads from https://realtica.com to provide more flexible and convenient access to ads.
 
 # Web
-The project available by http://realitica.struchev.site
+The project available by https://realitica.struchev.site
 
 # Run locally
 ### Using gradlew
-1. Install jdk 17
+1. Install jdk 21
 2. Execute
 ```shell
 ./gradlew bootRun
@@ -24,4 +24,4 @@ docker run -v $PWD/data:./data -p 80:80 --rm romanew/realitica:latest
 
 # Details
 The data storage is a local h2 file database by default.
-When the application starts, it goes to load ads from https://realitica.com. Also, ads reload every 6 hours
+When the application starts, it goes to load ads from https://realitica.com. Also, ads reload every 3 hours
