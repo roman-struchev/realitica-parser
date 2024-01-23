@@ -32,7 +32,7 @@ public class SubscriptionScheduler {
     /**
      * Send every 6 AM (GMT) updates for last 24h
      */
-    @Scheduled(cron = "0 0 6 * * ?")
+    @Scheduled(cron = "0 0 6 * * *")
     public void sendSubscriptions() {
         log.info("Start scheduler to send subscriptions");
 
@@ -98,5 +98,10 @@ public class SubscriptionScheduler {
             log.error("Can't compare {} with {}", filter, value, ex);
             return 0;
         }
+    }
+
+    @PostConstruct
+    private void init() {
+        log.info("Subscriptions: {}", subscriptionsConfiguration);
     }
 }
