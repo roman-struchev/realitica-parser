@@ -29,11 +29,15 @@ public class SubscriptionSender {
     }
 
     public void send(String telegramBotChatId, String content) {
-        if (bot != null && StringUtils.isNotEmpty(telegramBotChatId)) {
-            var message = new SendMessage(telegramBotChatId, content);
-            message.parseMode(ParseMode.Markdown);
-            message.disableWebPagePreview(true);
-            this.bot.execute(message);
+        try {
+            if (bot != null && StringUtils.isNotEmpty(telegramBotChatId)) {
+                var message = new SendMessage(telegramBotChatId, content);
+                message.parseMode(ParseMode.Markdown);
+                message.disableWebPagePreview(true);
+                this.bot.execute(message);
+            }
+        } catch (Exception ex) {
+            log.error("Can't send message to telegram {}: {}", telegramBotChatId, content);
         }
     }
 

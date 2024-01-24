@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  realitica-app:
+  realitica:
     image: 'romanew/realitica:latest'
     container_name: realitica
     network_mode: host
