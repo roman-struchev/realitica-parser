@@ -15,6 +15,7 @@ public class SubscriptionsConfiguration {
     @Data
     public static class Subscription {
         private List<String> telegramChatIds;
+        private List<String> whatsappNumbers;
         private List<String> types;
         private List<String> districts;
         private List<String> locations;
