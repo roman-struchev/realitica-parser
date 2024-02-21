@@ -53,7 +53,7 @@ public class SubscriptionSender {
             message.disableWebPagePreview(true);
             this.telegramBot.execute(message);
         } catch (Exception ex) {
-            log.error("Can't send message to telegram {}: {}", telegramBotChatId, content, ex);
+            log.error("Can't send message to telegram {}", telegramBotChatId, ex);
         }
     }
 
@@ -66,7 +66,7 @@ public class SubscriptionSender {
     private void sendToEmail(String email, String header, String content) {
         try {
             if (StringUtils.isAnyEmpty(email, smptHost, smptPort, smptLogin, smptPassword)) {
-                log.info("Skip sending to email for {}, [{}, {}, {}, {}]",email, smptHost, smptPort, smptLogin, smptPassword);
+                log.info("Skip sending to email {}, [{}, {}, {}, {}]",email, smptHost, smptPort, smptLogin, smptPassword);
             }
             var properties = System.getProperties();
             properties.put("mail.smtp.host", smptHost);
@@ -88,7 +88,7 @@ public class SubscriptionSender {
 
             Transport.send(message);
         } catch (Exception ex) {
-            log.error("Can't send message to email {}: {}", email, content, ex);
+            log.error("Can't send message to email {}, [{}, {}, {}, {}]",email, smptHost, smptPort, smptLogin, smptPassword, ex);
         }
     }
 
