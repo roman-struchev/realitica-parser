@@ -47,6 +47,7 @@ public class SubscriptionSender {
         try {
             if (this.telegramBot == null || StringUtils.isNotEmpty(telegramBotChatId)) {
                 log.info("Skip sending to telegram for {}", telegramBotChatId);
+                return;
             }
             var message = new SendMessage(telegramBotChatId, header + "\n" + content);
             message.parseMode(ParseMode.Markdown);
@@ -67,6 +68,7 @@ public class SubscriptionSender {
         try {
             if (StringUtils.isAnyEmpty(email, smptHost, smptPort, smptLogin, smptPassword)) {
                 log.info("Skip sending to email {}, [{}, {}, {}, {}]",email, smptHost, smptPort, smptLogin, smptPassword);
+                return;
             }
             var properties = System.getProperties();
             properties.put("mail.smtp.host", smptHost);
