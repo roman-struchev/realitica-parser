@@ -74,8 +74,8 @@ public class SubscriptionScheduler {
                     }).collect(Collectors.joining("\n\n"));
             var message = String.format("New since %s\n\n%s", dateFrom.toLocalDate().format(DateTimeFormatter.ISO_DATE), messageBody);
             subscriptionSender.sendToTelegram(s.getTelegramChatIds(), message);
-            subscriptionSender.sendToWhatsapp(s.getWhatsappNumbers(), message);
-            log.info("Sent {}:\n{}", s.getTelegramChatIds(), message);
+            subscriptionSender.sendToEmail(s.getEmails(), message);
+            log.info("Sent notification {}", message);
         });
     }
 

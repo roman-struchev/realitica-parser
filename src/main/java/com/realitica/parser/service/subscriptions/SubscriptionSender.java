@@ -5,15 +5,14 @@ import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.request.ParseMode;
 import com.pengrad.telegrambot.request.SendMessage;
 import jakarta.annotation.PostConstruct;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -26,12 +25,17 @@ public class SubscriptionSender {
     @Value("${app.telegram.bot.token:}")
     private String telegramBotToken;
 
-    @Value("${app.twilio.bot.sid:}")
-    private String twilioBotSid;
-    @Value("${app.twilio.bot.token:}")
-    private String twilioBotToken;
 
-    private TelegramBot bot;
+    @Value("${app.smtp.bot.host:}")
+    private String smptHost;
+    @Value("${app.smtp.bot.port:}")
+    private String smptPort;
+    @Value("${app.smtp.bot.login:}")
+    private String smptLogin;
+    @Value("${app.smtp.bot.password:}")
+    private String smptPassword;
+
+    private TelegramBot telegramBot;
 
     public void sendToTelegram(List<String> telegramBotChatIds, String content) {
         telegramBotChatIds.forEach(telegramBotChatId -> sendToTelegram(telegramBotChatId, content));
@@ -39,44 +43,46 @@ public class SubscriptionSender {
 
     public void sendToTelegram(String telegramBotChatId, String content) {
         try {
-            if (bot != null && StringUtils.isNotEmpty(telegramBotChatId)) {
+            if (this.telegramBot != null && StringUtils.isNotEmpty(telegramBotChatId)) {
                 var message = new SendMessage(telegramBotChatId, content);
                 message.parseMode(ParseMode.Markdown);
                 message.disableWebPagePreview(true);
-                this.bot.execute(message);
+                this.telegramBot.execute(message);
             }
         } catch (Exception ex) {
             log.error("Can't send message to telegram {}: {}", telegramBotChatId, content);
         }
     }
 
-    public void sendToWhatsapp(List<String> numbers, String content) {
-        numbers.forEach(number -> sendToWhatsapp(number, content));
+
+    public void sendToEmail(List<String> emails, String content) {
+        emails.forEach(email -> sendToEmail(email, content));
     }
 
-    public void sendToWhatsapp(String number, String content) {
-        if(StringUtils.isAllEmpty(twilioBotSid, twilioBotToken)) {
-            return;
-        }
-
+    public void sendToEmail(String email, String content) {
         try {
-            RestTemplate restTemplate = new RestTemplate();
+            if (StringUtils.isNoneEmpty(email, smptHost, smptPort, smptLogin, smptPassword)) {
+                var properties = System.getProperties();
+                properties.put("mail.smtp.host", smptHost);
+                properties.put("mail.smtp.port", smptPort);
+                properties.put("mail.smtp.auth", "true");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBasicAuth(twilioBotSid, twilioBotToken);
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                var session = Session.getInstance(properties, new Authenticator() {
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(smptLogin, smptPassword);
+                    }
+                });
 
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("To", "whatsapp:" + number);
-            formData.add("From", "whatsapp:+14155238886");
-            formData.add("Body", content.substring(0, 1599));
+                MimeMessage message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(smptLogin));
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+                message.setSubject("Realitica Bot: new ads");
+                message.setText(content);
 
-            HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(formData, headers);
-
-            String url = String.format("https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json", twilioBotSid);
-            restTemplate.postForEntity(url, requestEntity, String.class);
+                Transport.send(message);
+            }
         } catch (Exception ex) {
-            log.error("Can't send message to whatsapp {}: {}", number, content, ex);
+            log.error("Can't send message to email {}: {}", email, content);
         }
     }
 
@@ -84,22 +90,20 @@ public class SubscriptionSender {
     private void init() {
         if (StringUtils.isEmpty(telegramBotToken)) {
             log.info("Telegram bot token not filled");
-            return;
-        }
-
-        this.bot = new TelegramBot(telegramBotToken);
-        this.bot.setUpdatesListener(updates -> {
-            updates.forEach(update -> {
-                var chatId = update.message().chat().id();
-                var message = update.message().text();
-                if (message != null) {
-                    log.info("Telegram group {}, message: {}", chatId, message);
-                    var response = String.format("Your chat id: %s\nOriginal message: %s", chatId, message);
-                    bot.execute(new SendMessage(update.message().chat().id(), response));
-                }
+        } else {
+            this.telegramBot = new TelegramBot(telegramBotToken);
+            this.telegramBot.setUpdatesListener(updates -> {
+                updates.forEach(update -> {
+                    var chatId = update.message().chat().id();
+                    var message = update.message().text();
+                    if (message != null) {
+                        log.info("Telegram group {}, message: {}", chatId, message);
+                        var responseStr = String.format("Your chat id: %s\nOriginal message: %s", chatId, message);
+                        telegramBot.execute(new SendMessage(update.message().chat().id(), responseStr));
+                    }
+                });
+                return UpdatesListener.CONFIRMED_UPDATES_ALL;
             });
-            return UpdatesListener.CONFIRMED_UPDATES_ALL;
-        });
-
+        }
     }
 }

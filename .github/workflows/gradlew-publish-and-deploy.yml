@@ -49,8 +49,10 @@ jobs:
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-            export TWILIO_SID=${{ secrets.TWILIO_SID }}
-            export TWILIO_TOKEN=${{ secrets.TWILIO_TOKEN }}
+            export SMTP_HOST=${{ secrets.SMTP_HOST }}
+            export SMTP_PORT=${{ secrets.SMTP_PORT }}
+            export SMTP_LOGIN=${{ secrets.SMTP_LOGIN }}
+            export SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
             docker-compose -f docker-compose-live.yml down
             docker-compose -f docker-compose-live.yml pull
             docker-compose -f docker-compose-live.yml up -d
