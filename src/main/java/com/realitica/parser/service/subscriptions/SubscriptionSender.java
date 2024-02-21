@@ -67,7 +67,7 @@ public class SubscriptionSender {
     private void sendToEmail(String email, String header, String content) {
         try {
             if (StringUtils.isAnyEmpty(email, smptHost, smptPort, smptLogin, smptPassword)) {
-                log.info("Skip sending to email {}, [{}, {}, {}, {}]",email, smptHost, smptPort, smptLogin, smptPassword);
+                log.info("Skip sending to email {}, [{}, {}, {}, {}]", email, smptHost, smptPort, smptLogin, smptPassword);
                 return;
             }
             var properties = System.getProperties();
@@ -90,12 +90,14 @@ public class SubscriptionSender {
 
             Transport.send(message);
         } catch (Exception ex) {
-            log.error("Can't send message to email {}, [{}, {}, {}, {}]",email, smptHost, smptPort, smptLogin, smptPassword, ex);
+            log.error("Can't send message to email {}, [{}, {}, {}, {}]", email, smptHost, smptPort, smptLogin, smptPassword, ex);
         }
     }
 
     @PostConstruct
     private void init() {
+        log.info("SMTP settings [{}, {}, {}, {}]", smptHost, smptPort, smptLogin, smptPassword);
+
         if (StringUtils.isEmpty(telegramBotToken)) {
             log.info("Telegram bot token not filled");
         } else {
