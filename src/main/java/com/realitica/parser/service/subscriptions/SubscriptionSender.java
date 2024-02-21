@@ -26,7 +26,6 @@ public class SubscriptionSender {
     @Value("${app.telegram.bot.token:}")
     private String telegramBotToken;
 
-
     @Value("${app.smtp.bot.host:}")
     private String smptHost;
     @Value("${app.smtp.bot.port:}")
@@ -70,6 +69,7 @@ public class SubscriptionSender {
                 log.info("Skip sending to email {}", email);
                 return;
             }
+
             var properties = System.getProperties();
             properties.put("mail.smtp.host", smptHost);
             properties.put("mail.smtp.port", smptPort);
