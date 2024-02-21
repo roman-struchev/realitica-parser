@@ -66,6 +66,7 @@ public class SubscriptionSender {
                 properties.put("mail.smtp.host", smptHost);
                 properties.put("mail.smtp.port", smptPort);
                 properties.put("mail.smtp.auth", "true");
+                properties.put("mail.smtp.starttls.enable","true");
 
                 var session = Session.getInstance(properties, new Authenticator() {
                     protected PasswordAuthentication getPasswordAuthentication() {
