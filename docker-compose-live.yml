@@ -12,6 +12,8 @@ services:
       - spring.datasource.username=${POSTGRES_USER}
       - spring.datasource.password=${POSTGRES_PASSWORD}
       - app.telegram.bot.token=${TELEGRAM_BOT_TOKEN}
+      - app.twilio.bot.sid=${TWILIO_SID}
+      - app.twilio.bot.token=${TWILIO_TOKEN}
       - management.endpoints.web.exposure.include=metrics,prometheus
     mem_limit: 512m
     restart: always
