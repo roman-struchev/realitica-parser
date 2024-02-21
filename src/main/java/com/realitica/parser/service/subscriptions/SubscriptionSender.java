@@ -50,7 +50,7 @@ public class SubscriptionSender {
                 this.telegramBot.execute(message);
             }
         } catch (Exception ex) {
-            log.error("Can't send message to telegram {}: {}", telegramBotChatId, content);
+            log.error("Can't send message to telegram {}: {}", telegramBotChatId, content, ex);
         }
     }
 
@@ -82,7 +82,7 @@ public class SubscriptionSender {
                 Transport.send(message);
             }
         } catch (Exception ex) {
-            log.error("Can't send message to email {}: {}", email, content);
+            log.error("Can't send message to email {}: {}", email, content, ex);
         }
     }
 
