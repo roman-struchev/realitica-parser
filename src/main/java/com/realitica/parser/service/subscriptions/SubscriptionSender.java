@@ -37,14 +37,14 @@ public class SubscriptionSender {
 
     private TelegramBot telegramBot;
 
-    public void sendToTelegram(List<String> telegramBotChatIds, String content) {
-        telegramBotChatIds.forEach(telegramBotChatId -> sendToTelegram(telegramBotChatId, content));
+    public void sendToTelegram(List<String> telegramBotChatIds, String header, String content) {
+        telegramBotChatIds.forEach(telegramBotChatId -> sendToTelegram(telegramBotChatId, header, content));
     }
 
-    public void sendToTelegram(String telegramBotChatId, String content) {
+    public void sendToTelegram(String telegramBotChatId, String header, String content) {
         try {
             if (this.telegramBot != null && StringUtils.isNotEmpty(telegramBotChatId)) {
-                var message = new SendMessage(telegramBotChatId, content);
+                var message = new SendMessage(telegramBotChatId, header + "\n" + content);
                 message.parseMode(ParseMode.Markdown);
                 message.disableWebPagePreview(true);
                 this.telegramBot.execute(message);
@@ -55,11 +55,11 @@ public class SubscriptionSender {
     }
 
 
-    public void sendToEmail(List<String> emails, String content) {
-        emails.forEach(email -> sendToEmail(email, content));
+    public void sendToEmail(List<String> emails, String header, String content) {
+        emails.forEach(email -> sendToEmail(email, header, content));
     }
 
-    public void sendToEmail(String email, String content) {
+    public void sendToEmail(String email, String header, String content) {
         try {
             if (StringUtils.isNoneEmpty(email, smptHost, smptPort, smptLogin, smptPassword)) {
                 var properties = System.getProperties();
@@ -76,7 +76,7 @@ public class SubscriptionSender {
                 MimeMessage message = new MimeMessage(session);
                 message.setFrom(new InternetAddress(smptLogin));
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
-                message.setSubject("Realitica Bot: new ads");
+                message.setSubject(header);
                 message.setText(content);
 
                 Transport.send(message);

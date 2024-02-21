@@ -2,6 +2,7 @@ package com.realitica.parser.service.subscriptions;
 
 import com.realitica.parser.entity.AdEntity;
 import com.realitica.parser.repository.AdRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -66,16 +67,16 @@ public class SubscriptionScheduler {
                                     var location = StringUtils.defaultIfBlank(a.getLocation(), "?");
                                     var livingArea = StringUtils.defaultIfBlank(a.getLivingArea(), "?");
                                     var price = StringUtils.defaultIfBlank(a.getPrice(), "?");
-                                    return String.format("%s. %s, %s, %s, %se, [%s](%s)", index.getAndIncrement(),
-                                            a.getDistrict(), location, livingArea, price, a.getRealiticaId(), a.getLink());
+                                    return String.format("%s. %s, %s, %s, %se, <a href=\"%s\">%s</a>", index.getAndIncrement(),
+                                            a.getDistrict(), location, livingArea, price, a.getLink(), a.getRealiticaId());
                                 })
                                 .collect(Collectors.joining("\n"));
                         return String.format("%s\n%s", groupTitle, groupBody);
                     }).collect(Collectors.joining("\n\n"));
-            var message = String.format("New since %s\n\n%s", dateFrom.toLocalDate().format(DateTimeFormatter.ISO_DATE), messageBody);
-            subscriptionSender.sendToTelegram(s.getTelegramChatIds(), message);
-            subscriptionSender.sendToEmail(s.getEmails(), message);
-            log.info("Sent notification {}", message);
+            var header = String.format("New ads since %s", dateFrom.toLocalDate().format(DateTimeFormatter.ISO_DATE));
+            subscriptionSender.sendToTelegram(s.getTelegramChatIds(), header, messageBody);
+            subscriptionSender.sendToEmail(s.getEmails(), header, messageBody);
+            log.info("Sent notification {}", messageBody);
         });
     }
 
@@ -97,5 +98,10 @@ public class SubscriptionScheduler {
             log.error("Can't compare {} with {}", filter, value, ex);
             return 0;
         }
+    }
+
+    @PostConstruct
+    void init () {
+        sendSubscriptions();
     }
 }
