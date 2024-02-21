@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,51 +38,55 @@ public class SubscriptionSender {
 
     private TelegramBot telegramBot;
 
+    @Async
     public void sendToTelegram(List<String> telegramBotChatIds, String header, String content) {
         telegramBotChatIds.forEach(telegramBotChatId -> sendToTelegram(telegramBotChatId, header, content));
     }
 
-    public void sendToTelegram(String telegramBotChatId, String header, String content) {
+    private void sendToTelegram(String telegramBotChatId, String header, String content) {
         try {
-            if (this.telegramBot != null && StringUtils.isNotEmpty(telegramBotChatId)) {
-                var message = new SendMessage(telegramBotChatId, header + "\n" + content);
-                message.parseMode(ParseMode.Markdown);
-                message.disableWebPagePreview(true);
-                this.telegramBot.execute(message);
+            if (this.telegramBot == null || StringUtils.isNotEmpty(telegramBotChatId)) {
+                log.info("Skip sending to telegram for {}", telegramBotChatId);
             }
+            var message = new SendMessage(telegramBotChatId, header + "\n" + content);
+            message.parseMode(ParseMode.Markdown);
+            message.disableWebPagePreview(true);
+            this.telegramBot.execute(message);
         } catch (Exception ex) {
             log.error("Can't send message to telegram {}: {}", telegramBotChatId, content, ex);
         }
     }
 
 
+    @Async
     public void sendToEmail(List<String> emails, String header, String content) {
         emails.forEach(email -> sendToEmail(email, header, content));
     }
 
-    public void sendToEmail(String email, String header, String content) {
+    private void sendToEmail(String email, String header, String content) {
         try {
-            if (StringUtils.isNoneEmpty(email, smptHost, smptPort, smptLogin, smptPassword)) {
-                var properties = System.getProperties();
-                properties.put("mail.smtp.host", smptHost);
-                properties.put("mail.smtp.port", smptPort);
-                properties.put("mail.smtp.auth", "true");
-                properties.put("mail.smtp.starttls.enable","true");
-
-                var session = Session.getInstance(properties, new Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(smptLogin, smptPassword);
-                    }
-                });
-
-                MimeMessage message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(smptLogin));
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
-                message.setSubject(header);
-                message.setText(content);
-
-                Transport.send(message);
+            if (StringUtils.isAnyEmpty(email, smptHost, smptPort, smptLogin, smptPassword)) {
+                log.info("Skip sending to email for {}, [{}, {}, {}, {}]",email, smptHost, smptPort, smptLogin, smptPassword);
             }
+            var properties = System.getProperties();
+            properties.put("mail.smtp.host", smptHost);
+            properties.put("mail.smtp.port", smptPort);
+            properties.put("mail.smtp.auth", "true");
+            properties.put("mail.smtp.starttls.enable", "true");
+
+            var session = Session.getInstance(properties, new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(smptLogin, smptPassword);
+                }
+            });
+
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(smptLogin));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            message.setSubject(header);
+            message.setText(content);
+
+            Transport.send(message);
         } catch (Exception ex) {
             log.error("Can't send message to email {}: {}", email, content, ex);
         }

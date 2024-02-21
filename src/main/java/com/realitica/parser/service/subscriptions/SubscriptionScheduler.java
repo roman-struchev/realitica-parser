@@ -67,8 +67,8 @@ public class SubscriptionScheduler {
                                     var location = StringUtils.defaultIfBlank(a.getLocation(), "?");
                                     var livingArea = StringUtils.defaultIfBlank(a.getLivingArea(), "?");
                                     var price = StringUtils.defaultIfBlank(a.getPrice(), "?");
-                                    return String.format("%s. %s, %s, %s, %se, <a href=\"%s\">%s</a>", index.getAndIncrement(),
-                                            a.getDistrict(), location, livingArea, price, a.getLink(), a.getRealiticaId());
+                                    return String.format("%s. %s, %s, %s, %se, %s", index.getAndIncrement(),
+                                            a.getDistrict(), location, livingArea, price, a.getLink());
                                 })
                                 .collect(Collectors.joining("\n"));
                         return String.format("%s\n%s", groupTitle, groupBody);
