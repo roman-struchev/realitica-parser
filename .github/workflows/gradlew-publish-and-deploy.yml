@@ -52,7 +52,7 @@ jobs:
             export SMTP_HOST=${{ secrets.SMTP_HOST }}
             export SMTP_PORT=${{ secrets.SMTP_PORT }}
             export SMTP_LOGIN=${{ secrets.SMTP_LOGIN }}
-            export SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+            export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
             docker-compose -f docker-compose-live.yml down
             docker-compose -f docker-compose-live.yml pull
             docker-compose -f docker-compose-live.yml up -d
