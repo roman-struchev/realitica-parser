@@ -2,7 +2,6 @@ package com.realitica.parser.service.subscriptions;
 
 import com.realitica.parser.entity.AdEntity;
 import com.realitica.parser.repository.AdRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -97,10 +96,5 @@ public class SubscriptionScheduler {
             log.error("Can't compare {} with {}", filter, value, ex);
             return 0;
         }
-    }
-
-    @PostConstruct
-    void init() {
-        sendSubscriptions();
     }
 }
