@@ -12,9 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -35,8 +34,8 @@ public class SubscriptionScheduler {
     public void sendSubscriptions() {
         log.info("Start scheduler to send subscriptions");
 
-        var dateFrom = OffsetDateTime.now().minusDays(2);
-        var updatedAds = adRepository.findAllByLastModifiedIsAfter(new Date(dateFrom.toInstant().toEpochMilli()),
+        var dateFrom = LocalDate.now().minusDays(1);
+        var updatedAds = adRepository.findAllByLastModifiedGreaterThanEqual(dateFrom.atStartOfDay(),
                 Sort.by("type", "location", "livingArea", "price"));
 
         subscriptionsConfiguration.getSubscriptions().forEach(s -> {
@@ -73,7 +72,7 @@ public class SubscriptionScheduler {
                                 .collect(Collectors.joining("\n"));
                         return String.format("%s\n%s", groupTitle, groupBody);
                     }).collect(Collectors.joining("\n\n"));
-            var header = String.format("New ads since %s", dateFrom.toLocalDate().format(DateTimeFormatter.ISO_DATE));
+            var header = String.format("New ads since %s", dateFrom.format(DateTimeFormatter.ISO_DATE));
             subscriptionSender.sendToTelegram(s.getTelegramChatIds(), header, messageBody);
             subscriptionSender.sendToEmail(s.getEmails(), header, messageBody);
             log.info("Sent notification {}", messageBody);

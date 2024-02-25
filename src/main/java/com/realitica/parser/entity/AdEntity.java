@@ -9,8 +9,8 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.Date;
 
 @Entity
 @Getter
@@ -29,7 +29,7 @@ public class AdEntity {
     private String bedrooms;
     private String livingArea;
     private String moreInfo;
-    private Date lastModified;
+    private LocalDateTime lastModified;
     private String link;
 
     @CreationTimestamp

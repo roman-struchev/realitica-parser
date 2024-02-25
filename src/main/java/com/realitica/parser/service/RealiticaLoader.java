@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,7 +30,6 @@ public class RealiticaLoader {
     @Value("${realitica.url:https://www.realitica.com}")
     private String realiticaUrl;
     private List<String> CITIES_FILTER = List.of();
-    private final static SimpleDateFormat SDF = new SimpleDateFormat("dd MMM, yyyy", Locale.ENGLISH);
 
     @Scheduled(fixedDelay = 1000 * 60 * 60 * 2)
     public void loadFromRealitica() {
@@ -150,8 +149,8 @@ public class RealiticaLoader {
                         .map(link -> link.replace("https://www.realitica.com/en/listing/", ""))
                         .collect(Collectors.toList());
                 ids.addAll(listIds);
-            } catch (Throwable th) {
-                log.error("Can't load page with ad, goes to sleep 1s: " + urlWithAds, th);
+            } catch (Exception e) {
+                log.error("Can't load page with ad, goes to sleep 1s: " + urlWithAds, e);
                 Thread.sleep(1000);
             }
         }
@@ -207,8 +206,8 @@ public class RealiticaLoader {
                 }
             }
             return attributesMap;
-        } catch (Throwable th) {
-            log.error("Can't load ad {}", id, th);
+        } catch (Exception e) {
+            log.error("Can't load ad {}", id, e);
             Thread.sleep(1000);
             return loadAdAttributes(id, repeats - 1);
         }
@@ -238,12 +237,19 @@ public class RealiticaLoader {
                 return;
             }
 
-            Date lastMobified = null;
-            try {
-                lastMobified = attributesMap.get("Last Modified") != null ? SDF.parse(attributesMap.get("Last Modified")) : null;
-            } catch (ParseException e) {
-                log.error("Can't parse data {}, {}", id, attributesMap.get("Last Modified"));
-            }
+            var lastModifiedStr = attributesMap.get("Last Modified");
+            var lastModified = switch (lastModifiedStr) {
+                case null -> null;
+                default -> {
+                    try {
+                        yield LocalDate.parse(lastModifiedStr, DateTimeFormatter.ofPattern("d MMM, yyyy", Locale.ENGLISH));
+                    } catch (Exception e) {
+                        log.error("Can't parse data {}, {}", id, attributesMap.get("Last Modified"), e);
+                        yield null;
+                    }
+                }
+            };
+
 
             if (adEntity == null) {
                 adEntity = new AdEntity();
@@ -257,13 +263,13 @@ public class RealiticaLoader {
             adEntity.setBedrooms(attributesMap.get("Bedrooms"));
             adEntity.setLivingArea(attributesMap.get("Living Area"));
             adEntity.setMoreInfo(attributesMap.get("More info at"));
-            adEntity.setLastModified(lastMobified);
+            adEntity.setLastModified(lastModified == null ? null : lastModified.atStartOfDay());
             adEntity.setType(attributesMap.get("Type"));
             adEntity.setLink(realiticaUrl + "/en/listing/" + id);
             adRepository.save(adEntity);
             log.info("Save stun {}", id);
-        } catch (Throwable th) {
-            log.error("Can't save stun {}", id);
+        } catch (Exception e) {
+            log.error("Can't save stun {}", id, e);
         }
     }
 }
