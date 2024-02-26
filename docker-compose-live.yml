@@ -16,6 +16,5 @@ services:
       - app.smtp.bot.port=${SMTP_PORT}
       - app.smtp.bot.login=${SMTP_LOGIN}
       - app.smtp.bot.password=${SMTP_PASSWORD}
-      - management.endpoints.web.exposure.include=metrics,prometheus
     mem_limit: 512m
     restart: always
