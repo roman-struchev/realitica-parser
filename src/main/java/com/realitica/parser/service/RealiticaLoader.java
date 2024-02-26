@@ -31,9 +31,9 @@ public class RealiticaLoader {
     private String realiticaUrl;
     private List<String> CITIES_FILTER = List.of();
 
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 2)
-    public void loadFromRealitica() {
-        log.info("Start scheduler loadFromRealitica");
+    @Scheduled(initialDelayString = "PT2M", fixedRateString = "PT2H")
+    private void load() {
+        log.info("Start scheduler to load ads from realitica");
         var searchesByCitiesAndAreas
                 = loadSearchesByCitiesAndAreas(realiticaUrl + "/rentals/Montenegro/", null);
         searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
@@ -47,9 +47,9 @@ public class RealiticaLoader {
         });
     }
 
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 24 * 7)
-    public void removeDeprecated() {
-        log.info("Start scheduler removeDeprecated");
+    @Scheduled(cron = "0 0 0 * * MON") // every Monday
+    private void removeDeprecated() {
+        log.info("Start scheduler to  remove deprecated");
         var deprecatedDate = OffsetDateTime.now().minusMonths(2);
         var deprecatedAdEntities = adRepository.findAll().stream()
                 .filter(s -> s.getUpdated() == null || s.getUpdated().isBefore(deprecatedDate))
@@ -181,7 +181,7 @@ public class RealiticaLoader {
      * @throws IOException
      */
     @SneakyThrows
-    public Map<String, String> loadAdAttributes(String id, int repeats) {
+    private Map<String, String> loadAdAttributes(String id, int repeats) {
         if (repeats < 0) {
             return null;
         }
