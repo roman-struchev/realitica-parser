@@ -31,7 +31,7 @@ public class RealiticaLoader {
     private String realiticaUrl;
     private List<String> CITIES_FILTER = List.of();
 
-    @Scheduled(initialDelayString = "PT2M", fixedRateString = "PT2H")
+    @Scheduled(initialDelayString = "PT2M", fixedDelayString = "PT2H")
     private void load() {
         log.info("Start scheduler to load ads from realitica");
         var searchesByCitiesAndAreas
@@ -43,8 +43,9 @@ public class RealiticaLoader {
         searches.forEach(urlWithAd -> {
             log.info("Start to load by filter: {}", urlWithAd);
             var ids = loadIdsBySearch(urlWithAd);
-            ids.stream().forEach(id -> loadAdAndSave(id, 1));
+            ids.forEach(id -> loadAdAndSave(id, 1));
         });
+        log.info("Finish scheduler to load ads from realitica");
     }
 
     @Scheduled(cron = "0 0 0 * * MON") // every Monday
