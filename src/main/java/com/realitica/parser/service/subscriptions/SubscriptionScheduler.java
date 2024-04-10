@@ -29,7 +29,7 @@ public class SubscriptionScheduler {
     /**
      * Send every 6 AM (GMT) updates for last 24h
      */
-    @Scheduled(cron = "0 0 6 * * *")
+    @Scheduled(cron = "0 0 5 * * *")
     public void sendSubscriptions() {
         log.info("Start scheduler to send subscriptions");
 
