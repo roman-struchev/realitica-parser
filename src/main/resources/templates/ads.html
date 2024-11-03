@@ -5,7 +5,8 @@
     <title>Parser</title>
 
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/searchpanes/1.2.1/css/searchPanes.dataTables.min.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.datatables.net/searchpanes/1.2.1/css/searchPanes.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css">
 
     <style>
@@ -30,7 +31,11 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-M0P2NJBFKY"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
         gtag('js', new Date());
         gtag('config', 'G-M0P2NJBFKY');
     </script>
@@ -66,6 +71,9 @@
 </table>
 <script>
     $(document).ready(function () {
+        var isTypeSale = window.location.search.includes('type=Sale');
+        var priceFilterMultiplier = isTypeSale ? 100 : 1;
+
         $('#table_id').DataTable({
             "paging": true,
             "lengthMenu": [100, 500, 1000],
@@ -92,24 +100,28 @@
                     },
                     {
                         header: 'Price range',
-                        options: [200, 300, 400, 500, 600, 700, 800, 1000, 1200, 50000, 80000].map(p => ({
-                            label: '<= ' + p,
-                            value: function (rowData, rowIdx) {
-                                return !rowData[5] || parseFloat(rowData[5]) <= p;
-                            }
-                        })).concat(
-                            [200, 300, 400, 500, 600, 20000].map(p => ({
-                                label: '>= ' + p,
+                        options: [200, 300, 400, 500, 600, 700, 800, 1000, 1200]
+                            .map(p => p * priceFilterMultiplier)
+                            .map(p => ({
+                                label: '<= ' + p,
                                 value: function (rowData, rowIdx) {
-                                    return !rowData[5] || parseFloat(rowData[5]) >= p;
+                                    return !rowData[5] || parseFloat(rowData[5]) <= p;
                                 }
-                            }))
-                        )
+                            })).concat(
+                                [200, 300, 400, 500, 600]
+                                    .map(p => p * priceFilterMultiplier)
+                                    .map(p => ({
+                                        label: '>= ' + p,
+                                        value: function (rowData, rowIdx) {
+                                            return !rowData[5] || parseFloat(rowData[5]) >= p;
+                                        }
+                                    }))
+                            )
                     }
                 ]
             },
             dom: 'Plfrtip',
-            fnDrawCallback: function() {
+            fnDrawCallback: function () {
                 $("#loading_id").hide();
                 $("#table_id").show();
             }
