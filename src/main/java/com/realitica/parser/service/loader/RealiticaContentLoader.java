@@ -1,4 +1,4 @@
-package com.realitica.parser.service;
+package com.realitica.parser.service.loader;
 
 import com.realitica.parser.entity.AdEntity;
 import com.realitica.parser.repository.AdRepository;
@@ -9,58 +9,46 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class RealiticaLoader {
+public class RealiticaContentLoader implements IContentLoader {
 
     private final AdRepository adRepository;
 
     @Value("${realitica.url:https://www.realitica.com}")
-    private String realiticaUrl;
-    private List<String> CITIES_FILTER = List.of();
+    private String baseUrl;
 
-    @Scheduled(initialDelayString = "PT2M", fixedDelayString = "PT2H")
-    private void load() {
-        log.info("Start scheduler to load ads from realitica");
-        var searchesByCitiesAndAreas
-                = loadSearchesByCitiesAndAreas(realiticaUrl + "/rentals/Montenegro/", null);
-        searchesByCitiesAndAreas = searchesByCitiesAndAreas.entrySet().stream()
-                .filter(e -> CITIES_FILTER.isEmpty() || CITIES_FILTER.contains(e.getKey()))
-                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+    @Override
+    public List<String> loadAndSave() {
+        var searchesByCitiesAndAreas = loadSearchesByCitiesAndAreas(baseUrl + "/rentals/Montenegro/", null);
         var searches = extractFlatSearchUrlList(searchesByCitiesAndAreas);
-        searches.forEach(urlWithAd -> {
-            log.info("Start to load by filter: {}", urlWithAd);
-            var ids = loadIdsBySearch(urlWithAd);
-            ids.forEach(id -> loadAdAndSave(id, 1));
-        });
-        log.info("Finish scheduler to load ads from realitica");
+        return searches.stream()
+                .map(this::loadIdsBySearch)
+                .flatMap(Collection::stream)
+                .map(id -> loadAdAndSave(id, 1))
+                .filter(Objects::nonNull)
+                .map(AdEntity::getSourceId)
+                .toList();
     }
 
-    @Scheduled(cron = "0 0 0 * * MON") // every Monday
-    private void removeDeprecated() {
-        log.info("Start scheduler to  remove deprecated");
-        var deprecatedDate = OffsetDateTime.now().minusMonths(2);
-        var deprecatedAdEntities = adRepository.findAll().stream()
-                .filter(s -> s.getUpdated() == null || s.getUpdated().isBefore(deprecatedDate))
-                .parallel()
-                .filter(s -> {
-                    Map<String, String> attributesMap = loadAdAttributes(s.getSourceId(), 1);
-                    return attributesMap == null || attributesMap.isEmpty();
-                })
-                .collect(Collectors.toList());
-        adRepository.deleteAll(deprecatedAdEntities);
+    @Override
+    public String getSourceName() {
+        return "realitica";
+    }
+
+    @Override
+    public boolean isCanBeDeleted(String sourceId) {
+        var attributesMap = loadAdAttributes(sourceId, 1);
+        return attributesMap == null || attributesMap.isEmpty();
     }
 
     /**
@@ -127,6 +115,7 @@ public class RealiticaLoader {
      */
     @SneakyThrows
     private HashSet<String> loadIdsBySearch(String urlWithAds) {
+        log.info("Start to load by filter: {}", urlWithAds);
         var ids = new LinkedHashSet<String>();
 
         int curPage = 0;
@@ -135,7 +124,7 @@ public class RealiticaLoader {
                 var url = urlWithAds + "&cur_page=" + curPage;
                 var pageDoc = Jsoup.connect(url).get();
                 var adElements = pageDoc.select("div.thumb_div > a");
-                if (adElements.size() == 0) {
+                if (adElements.isEmpty()) {
                     log.info("Last page {} of {}", curPage + 1, urlWithAds);
                     curPage = -1;
                     continue;
@@ -148,7 +137,7 @@ public class RealiticaLoader {
                         .map(el -> el.attr("href"))
                         .filter(link -> link.startsWith("https://www.realitica.com/en/listing/"))
                         .map(link -> link.replace("https://www.realitica.com/en/listing/", ""))
-                        .collect(Collectors.toList());
+                        .toList();
                 ids.addAll(listIds);
             } catch (Exception e) {
                 log.error("Can't load page with ad, goes to sleep 1s: " + urlWithAds, e);
@@ -190,7 +179,7 @@ public class RealiticaLoader {
         try {
             log.info("Loading ad {}", id);
 
-            var doc = Jsoup.connect(realiticaUrl + "/en/listing/" + id).get();
+            var doc = Jsoup.connect(baseUrl + "/en/listing/" + id).get();
             var attributesMap = new LinkedHashMap<String, String>();
 
             var parentElements = doc.select("div");
@@ -220,22 +209,18 @@ public class RealiticaLoader {
      * @param id
      * @param repeats
      */
-    private void loadAdAndSave(String id, int repeats) {
+    private AdEntity loadAdAndSave(String id, int repeats) {
         try {
             if (repeats < 0) {
                 log.error("Will be not repeat for {}", id);
-                return;
+                return null;
             }
 
             var adEntity = adRepository.findBySourceIdAndSourceCode(id, "realitica");
             var attributesMap = loadAdAttributes(id, 1);
             if (attributesMap == null || attributesMap.isEmpty()) {
-                if (adEntity != null) {
-                    log.error("Attributes is empty for {}. Stun {} will be removed from DB", id, adEntity.getId());
-                    adRepository.delete(adEntity);
-                }
                 log.error("Attributes is empty for {}. Stun will be skipped, not founded in DB", id);
-                return;
+                return null;
             }
 
             var lastModifiedStr = attributesMap.get("Last Modified");
@@ -256,7 +241,7 @@ public class RealiticaLoader {
                 adEntity = new AdEntity();
                 adEntity.setSourceId(id);
                 adEntity.setSourceCode("realitica");
-                adEntity.setSourceLink(realiticaUrl + "/en/listing/" + id);
+                adEntity.setSourceLink(baseUrl + "/en/listing/" + id);
             }
             adEntity.setType(attributesMap.get("Type"));
             adEntity.setCity(attributesMap.get("District"));
@@ -270,8 +255,11 @@ public class RealiticaLoader {
             adEntity.setType(attributesMap.get("Type"));
             adRepository.save(adEntity);
             log.info("Save stun {}", id);
+
+            return adEntity;
         } catch (Exception e) {
             log.error("Can't save stun {}", id, e);
+            return null;
         }
     }
 }
