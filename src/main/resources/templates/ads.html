@@ -46,26 +46,26 @@
 <table id="table_id" class="display" style="display: none">
     <thead>
     <tr>
-        <th>district</th>
-        <th>location</th>
-        <th>type</th>
-        <th>bedrooms</th>
-        <th>livingArea</th>
-        <th>price</th>
-        <th>lastModified</th>
-        <th>link</th>
+        <th>City</th>
+        <th>Area</th>
+        <th>Type</th>
+        <th>Bedrooms</th>
+        <th>Size</th>
+        <th>Price</th>
+        <th>Last modified</th>
+        <th>Link</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="s: ${ads}">
-        <td th:text="${s.district}"/>
-        <td th:text="${s.district}  + ${s.location == null ? '' : '/' + s.location}"/>
+        <td th:text="${s.city}"/>
+        <td th:text="${s.city}  + ${s.location == null ? '' : '/' + s.location}"/>
         <td th:text="${s.type}"/>
         <td th:text="${s.bedrooms}"/>
-        <td th:text="${s.livingArea}"/>
+        <td th:text="${s.size}"/>
         <td th:text="${s.price}"/>
         <td th:text="${#strings.replace(s.lastModified, 'T00:00', '')}"/>
-        <td><a th:href="${s.link}" th:text="${s.realiticaId}" target="_blank"></a></td>
+        <td><a th:href="${s.sourceLink}" th:text="${s.sourceId}" target="_blank"></a></td>
     </tr>
     </tbody>
 </table>

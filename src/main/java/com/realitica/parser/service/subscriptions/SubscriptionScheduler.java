@@ -39,7 +39,7 @@ public class SubscriptionScheduler {
 
         subscriptionsConfiguration.getSubscriptions().forEach(s -> {
             var adsToSend = updatedAds.stream()
-                    .filter(a -> CollectionUtils.isEmpty(s.getDistricts()) || a.getDistrict() == null || s.getDistricts().contains(a.getDistrict()))
+                    .filter(a -> CollectionUtils.isEmpty(s.getDistricts()) || a.getCity() == null || s.getDistricts().contains(a.getCity()))
                     .filter(a -> CollectionUtils.isEmpty(s.getLocations()) || a.getLocation() == null
                             || s.getLocations().stream().anyMatch(loc -> distance.apply(loc, a.getLocation()) < 0.1d))
                     .filter(a -> CollectionUtils.isEmpty(s.getTypes()) || a.getType() == null || s.getTypes().contains(a.getType()))
@@ -47,8 +47,8 @@ public class SubscriptionScheduler {
                     .filter(a -> s.getPriceLessThen() == null || compareUnits(s.getPriceMoreThen(), a.getPrice()) <= 0)
                     .filter(a -> s.getBedroomsLessThen() == null || compareUnits(s.getBedroomsLessThen(), a.getBedrooms()) >= 0)
                     .filter(a -> s.getBedroomsMoreThen() == null || compareUnits(s.getBedroomsMoreThen(), a.getBedrooms()) <= 0)
-                    .filter(a -> s.getLivingAreaLessThen() == null || compareUnits(s.getLivingAreaLessThen(), a.getLivingArea()) >= 0)
-                    .filter(a -> s.getLivingAreaMoreThen() == null || compareUnits(s.getLivingAreaMoreThen(), a.getLivingArea()) <= 0)
+                    .filter(a -> s.getLivingAreaLessThen() == null || compareUnits(s.getLivingAreaLessThen(), a.getSize()) >= 0)
+                    .filter(a -> s.getLivingAreaMoreThen() == null || compareUnits(s.getLivingAreaMoreThen(), a.getSize()) <= 0)
                     .toList();
             if (CollectionUtils.isEmpty(adsToSend)) {
                 return;
@@ -63,10 +63,10 @@ public class SubscriptionScheduler {
                         var groupBody = e.getValue().stream()
                                 .map(a -> {
                                     var location = StringUtils.defaultIfBlank(a.getLocation(), "?");
-                                    var livingArea = StringUtils.defaultIfBlank(a.getLivingArea(), "?");
+                                    var livingArea = StringUtils.defaultIfBlank(a.getSize(), "?");
                                     var price = StringUtils.defaultIfBlank(a.getPrice(), "?");
                                     return String.format("%s. %s, %s, %s, %se, %s", index.getAndIncrement(),
-                                            a.getDistrict(), location, livingArea, price, a.getLink());
+                                            a.getCity(), location, livingArea, price, a.getSourceLink());
                                 })
                                 .collect(Collectors.joining("\n"));
                         return String.format("%s\n%s", groupTitle, groupBody);

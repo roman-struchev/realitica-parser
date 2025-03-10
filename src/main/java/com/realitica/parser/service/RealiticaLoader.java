@@ -56,7 +56,7 @@ public class RealiticaLoader {
                 .filter(s -> s.getUpdated() == null || s.getUpdated().isBefore(deprecatedDate))
                 .parallel()
                 .filter(s -> {
-                    Map<String, String> attributesMap = loadAdAttributes(s.getRealiticaId(), 1);
+                    Map<String, String> attributesMap = loadAdAttributes(s.getSourceId(), 1);
                     return attributesMap == null || attributesMap.isEmpty();
                 })
                 .collect(Collectors.toList());
@@ -227,7 +227,7 @@ public class RealiticaLoader {
                 return;
             }
 
-            var adEntity = adRepository.findByRealiticaId(id);
+            var adEntity = adRepository.findBySourceIdAndSourceCode(id, "realitica");
             var attributesMap = loadAdAttributes(id, 1);
             if (attributesMap == null || attributesMap.isEmpty()) {
                 if (adEntity != null) {
@@ -254,19 +254,20 @@ public class RealiticaLoader {
 
             if (adEntity == null) {
                 adEntity = new AdEntity();
-                adEntity.setRealiticaId(id);
+                adEntity.setSourceId(id);
+                adEntity.setSourceCode("realitica");
+                adEntity.setSourceLink(realiticaUrl + "/en/listing/" + id);
             }
             adEntity.setType(attributesMap.get("Type"));
-            adEntity.setDistrict(attributesMap.get("District"));
+            adEntity.setCity(attributesMap.get("District"));
             adEntity.setLocation(attributesMap.get("Location"));
             adEntity.setAddress(attributesMap.get("Address"));
             adEntity.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replace("€", "").replace(".", "") : null);
             adEntity.setBedrooms(attributesMap.get("Bedrooms"));
-            adEntity.setLivingArea(attributesMap.get("Living Area"));
-            adEntity.setMoreInfo(attributesMap.get("More info at"));
+            adEntity.setSize(attributesMap.get("Living Area"));
+            adEntity.setDetails(attributesMap.get("More info at"));
             adEntity.setLastModified(lastModified == null ? null : lastModified.atStartOfDay());
             adEntity.setType(attributesMap.get("Type"));
-            adEntity.setLink(realiticaUrl + "/en/listing/" + id);
             adRepository.save(adEntity);
             log.info("Save stun {}", id);
         } catch (Exception e) {

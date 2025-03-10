@@ -10,7 +10,7 @@ import java.util.List;
 
 @RepositoryRestResource(path = "ads")
 public interface AdRepository extends JpaRepository<AdEntity, Long> {
-    AdEntity findByRealiticaId(String realiticaId);
+    AdEntity findBySourceIdAndSourceCode(String id, String code);
 
     List<AdEntity> findAllByTypeContainsIgnoreCase(String type, Sort sort);
 

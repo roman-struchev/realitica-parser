@@ -20,17 +20,23 @@ public class AdEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String realiticaId;
+    private String sourceId;
+    private String sourceCode;
+    private String sourceLink;
+
     private String type;
     private String price;
-    private String district;
-    private String address;
+
+    private String city;
     private String location;
+    private String address;
+
     private String bedrooms;
-    private String livingArea;
-    private String moreInfo;
+    private String size;
+
+    private String details;
+
     private LocalDateTime lastModified;
-    private String link;
 
     @CreationTimestamp
     private OffsetDateTime created;
