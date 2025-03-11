@@ -42,7 +42,7 @@ public class SubscriptionScheduler {
                     .filter(a -> CollectionUtils.isEmpty(s.getDistricts()) || a.getCity() == null || s.getDistricts().contains(a.getCity()))
                     .filter(a -> CollectionUtils.isEmpty(s.getLocations()) || a.getLocation() == null
                             || s.getLocations().stream().anyMatch(loc -> distance.apply(loc, a.getLocation()) < 0.1d))
-                    .filter(a -> CollectionUtils.isEmpty(s.getTypes()) || a.getType() == null || s.getTypes().contains(a.getType()))
+                    .filter(a -> CollectionUtils.isEmpty(s.getTypes()) || a.getType() == null || s.getTypes().contains(a.getType().getDesc()))
                     .filter(a -> s.getPriceLessThen() == null || compareUnits(s.getPriceLessThen(), a.getPrice()) >= 0)
                     .filter(a -> s.getPriceLessThen() == null || compareUnits(s.getPriceMoreThen(), a.getPrice()) <= 0)
                     .filter(a -> s.getBedroomsLessThen() == null || compareUnits(s.getBedroomsLessThen(), a.getBedrooms()) >= 0)

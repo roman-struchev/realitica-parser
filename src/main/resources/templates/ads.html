@@ -60,7 +60,7 @@
     <tr th:each="s: ${ads}">
         <td th:text="${s.city}"/>
         <td th:text="${s.city}  + ${s.location == null ? '' : '/' + s.location}"/>
-        <td th:text="${s.type}"/>
+        <td th:text="${s.type.desc}"/>
         <td th:text="${s.bedrooms}"/>
         <td th:text="${s.size}"/>
         <td th:text="${s.price}"/>

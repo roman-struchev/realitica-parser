@@ -12,7 +12,7 @@ import java.util.List;
 public interface AdRepository extends JpaRepository<AdEntity, Long> {
     AdEntity findBySourceIdAndSourceCode(String id, String code);
 
-    List<AdEntity> findAllByTypeContainsIgnoreCase(String type, Sort sort);
+    List<AdEntity> findAllByTypeIn(List<AdEntity.Type> types, Sort sort);
 
     List<AdEntity> findAllByLastModifiedGreaterThanEqual(LocalDateTime lastModifiedFrom, Sort sort);
 }

@@ -1,5 +1,6 @@
 package com.realitica.parser.controller;
 
+import com.realitica.parser.entity.AdEntity;
 import com.realitica.parser.repository.AdRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,8 @@ public class AdController {
 
     @GetMapping(path = {"/"})
     public ModelAndView load(@RequestParam(name = "type", defaultValue = "Rental") String type) {
-        var ads = adRepository.findAllByTypeContainsIgnoreCase(type, Sort.by(Sort.Direction.DESC, "lastModified"));
-        var attributes = Map.of("ads", ads);
-        return new ModelAndView("ads", attributes);
+        var types = AdEntity.Type.allBy(type);
+        var ads = adRepository.findAllByTypeIn(types, Sort.by(Sort.Direction.DESC, "lastModified"));
+        return new ModelAndView("ads", Map.of("ads", ads));
     }
 }

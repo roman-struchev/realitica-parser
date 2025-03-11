@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static com.realitica.parser.entity.AdEntity.Type.*;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -243,7 +245,6 @@ public class RealiticaContentLoader implements IContentLoader {
                 adEntity.setSourceCode("realitica");
                 adEntity.setSourceLink(baseUrl + "/en/listing/" + id);
             }
-            adEntity.setType(attributesMap.get("Type"));
             adEntity.setCity(attributesMap.get("District"));
             adEntity.setLocation(attributesMap.get("Location"));
             adEntity.setAddress(attributesMap.get("Address"));
@@ -252,7 +253,7 @@ public class RealiticaContentLoader implements IContentLoader {
             adEntity.setSize(attributesMap.get("Living Area"));
             adEntity.setDetails(attributesMap.get("More info at"));
             adEntity.setLastModified(lastModified == null ? null : lastModified.atStartOfDay());
-            adEntity.setType(attributesMap.get("Type"));
+            adEntity.setType(convertType(attributesMap.get("Type")));
             adRepository.save(adEntity);
             log.info("Save stun {}", id);
 
@@ -261,5 +262,23 @@ public class RealiticaContentLoader implements IContentLoader {
             log.error("Can't save stun {}", id, e);
             return null;
         }
+    }
+
+    private AdEntity.Type convertType(String type) {
+        return switch (type) {
+            case "Apartment For Sale" -> APARTMENT_FOR_SALE;
+            case "Apartment Long Term Rental", "Room Long Term Rental" -> APARTMENT_LONG_TERM_RENTAL;
+            case "House For Sale" -> HOUSE_FOR_SALE;
+            case "House Long Term Rental" -> HOUSE_LONG_TERM_RENTAL;
+            case "Land For Sale", "Agricultural Land For Sale" -> LAND_FOR_SALE;
+            case "Land Long Term Rental" -> LAND_LONG_TERM_RENTAL;
+            case "Residential Lot For Sale" -> RESIDENTIAL_FOR_SALE;
+            case "Residential Lot Long Term Rental" -> RESIDENTIAL_LONG_TERM_RENTAL;
+            case "Commercial Property For Sale", "Hotel For Sale", "Campground For Sale" -> COMMERCIAL_FOR_SALE;
+            case "Commercial Property Long Term Rental", "Hotel Long Term Rental" -> COMMERCIAL_LONG_TERM_RENTAL;
+            case "Garage For Sale" -> GARAGE_FOR_SALE;
+            case "Garage Long Term Rental" -> GARAGE_LONG_TERM_RENTAL;
+            default -> OTHER;
+        };
     }
 }
