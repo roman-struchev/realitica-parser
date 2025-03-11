@@ -1,4 +1,4 @@
-package com.realitica.parser.service.loader;
+package com.estate.parser.service.loader;
 
 import java.util.List;
 

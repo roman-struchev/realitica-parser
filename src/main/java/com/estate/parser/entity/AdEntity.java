@@ -1,4 +1,4 @@
-package com.realitica.parser.entity;
+package com.estate.parser.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.realitica.parser.service.subscriptions;
+package com.estate.parser.service.subscriptions;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;

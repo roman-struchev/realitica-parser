@@ -1,7 +1,7 @@
-package com.realitica.parser.controller;
+package com.estate.parser.controller;
 
-import com.realitica.parser.entity.AdEntity;
-import com.realitica.parser.repository.AdRepository;
+import com.estate.parser.entity.AdEntity;
+import com.estate.parser.repository.AdRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;

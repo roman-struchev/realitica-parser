@@ -1,4 +1,4 @@
-package com.realitica.parser;
+package com.estate.parser;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,10 +8,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 @EnableAsync
-public class RealiticaParserApplication {
+public class EstateParserApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RealiticaParserApplication.class, args);
+		SpringApplication.run(EstateParserApplication.class, args);
 	}
 
 }

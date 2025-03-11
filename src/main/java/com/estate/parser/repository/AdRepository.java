@@ -1,6 +1,6 @@
-package com.realitica.parser.repository;
+package com.estate.parser.repository;
 
-import com.realitica.parser.entity.AdEntity;
+import com.estate.parser.entity.AdEntity;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;

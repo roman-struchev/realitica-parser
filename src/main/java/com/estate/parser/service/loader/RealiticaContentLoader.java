@@ -1,7 +1,7 @@
-package com.realitica.parser.service.loader;
+package com.estate.parser.service.loader;
 
-import com.realitica.parser.entity.AdEntity;
-import com.realitica.parser.repository.AdRepository;
+import com.estate.parser.entity.AdEntity;
+import com.estate.parser.repository.AdRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.realitica.parser.entity.AdEntity.Type.*;
+import static com.estate.parser.entity.AdEntity.Type.*;
 
 @Service
 @Slf4j

@@ -1,10 +1,10 @@
-package com.realitica.parser;
+package com.estate.parser;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RealiticaParserApplicationTests {
+class EstateParserApplicationTests {
 
 	@Test
 	void contextLoads() {
