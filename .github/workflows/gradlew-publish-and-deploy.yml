@@ -19,7 +19,7 @@ jobs:
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
-          name: romanew/realitica:latest
+          name: romanew/estate:latest
           username: ${{ secrets.DOCKER_PUBLISH_REGISTRY_USERNAME }}
           password: ${{ secrets.DOCKER_PUBLISH_REGISTRY_PASSWORD }}
 
@@ -33,7 +33,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: docker-compose-live.yml
-          remote: ./realitica/docker-compose-live.yml
+          remote: ./estate/docker-compose-live.yml
           host: 31.186.136.15
           username: root
           privateKey: ${{ secrets.SSH_PRIVATE_KEY_PERSONAL }}
@@ -45,7 +45,7 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY_PERSONAL }}
           script: |
-            cd realitica
+            cd estate
             export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}

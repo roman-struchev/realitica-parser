@@ -29,8 +29,8 @@ public class EstitorContentLoader implements IContentLoader {
     @Override
     public List<String> loadAndSave() {
         var searches = List.of(
-                "https://estitor.com/me-en/real-estates/purpose-sale",
-                "https://estitor.com/me-en/real-estates/purpose-rent"
+                "https://estitor.com/me-en/real-estates/purpose-rent",
+                "https://estitor.com/me-en/real-estates/purpose-sale"
         );
         return searches.stream()
                 .map(this::loadIdsBySearch)
@@ -196,11 +196,9 @@ public class EstitorContentLoader implements IContentLoader {
             }
             adEntity.setCity(attributesMap.get("City"));
             adEntity.setLocation(attributesMap.get("Neighborhood"));
-            adEntity.setAddress(attributesMap.get("Address"));//?????
             adEntity.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replaceAll("[^\\d]", "") : null);
             adEntity.setBedrooms(attributesMap.get("Number of rooms"));
             adEntity.setSize(attributesMap.get("Square footage") != null ? attributesMap.get("Square footage").replaceAll("[^\\d]", "") : null);
-            adEntity.setDetails(attributesMap.get("More info at"));//???
             adEntity.setLastModified(lastModified == null ? null : lastModified.atStartOfDay());
             adEntity.setType(convertType(attributesMap.get("Type")));
             adRepository.save(adEntity);
@@ -214,7 +212,6 @@ public class EstitorContentLoader implements IContentLoader {
     }
 
     private AdEntity.Type convertType(String type) {
-        log.info("Type {}", type);
         if (type.contains("Sale")) {
             if (type.contains("Office")) {
                 return COMMERCIAL_FOR_SALE;

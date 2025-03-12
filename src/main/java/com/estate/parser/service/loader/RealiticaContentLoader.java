@@ -247,11 +247,9 @@ public class RealiticaContentLoader implements IContentLoader {
             }
             adEntity.setCity(attributesMap.get("District"));
             adEntity.setLocation(attributesMap.get("Location"));
-            adEntity.setAddress(attributesMap.get("Address"));
-            adEntity.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replace("€", "").replace(".", "") : null);
+            adEntity.setPrice(attributesMap.get("Price") != null ? attributesMap.get("Price").replace("€", "").replace(".", "").trim() : null);
             adEntity.setBedrooms(attributesMap.get("Bedrooms"));
-            adEntity.setSize(attributesMap.get("Living Area"));
-            adEntity.setDetails(attributesMap.get("More info at"));
+            adEntity.setSize(attributesMap.get("Living Area") != null ? StringUtils.strip(attributesMap.get("Living Area"), "m").trim() : null);
             adEntity.setLastModified(lastModified == null ? null : lastModified.atStartOfDay());
             adEntity.setType(convertType(attributesMap.get("Type")));
             adRepository.save(adEntity);

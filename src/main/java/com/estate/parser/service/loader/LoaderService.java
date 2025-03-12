@@ -19,7 +19,7 @@ public class LoaderService {
 
     @Scheduled(initialDelayString = "PT2M", fixedDelayString = "PT2H")
     private void load() {
-        contentLoaders.forEach(loader -> {
+        contentLoaders.parallelStream().forEach(loader -> {
             log.info("Start loading from {}", loader.getSourceName());
             var ids = loader.loadAndSave();
             log.info("Finish loading from {}, count {}", loader.getSourceName(), ids.size());

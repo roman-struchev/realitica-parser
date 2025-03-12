@@ -22,7 +22,7 @@ The project available by https://estate.struchev.site
 1. Install docker
 2. Execute
 ```shell
-docker run -v $PWD/data:./data -p 80:80 --rm romanew/realitica:latest
+docker run -v $PWD/data:./data -p 80:80 --rm romanew/estate:latest
 ```
 3. Open http://localhost
 

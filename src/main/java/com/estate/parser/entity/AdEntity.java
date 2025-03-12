@@ -31,12 +31,9 @@ public class AdEntity {
 
     private String city;
     private String location;
-    private String address;
 
     private String bedrooms;
     private String size;
-
-    private String details;
 
     private LocalDateTime lastModified;
 

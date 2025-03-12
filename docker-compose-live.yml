@@ -1,14 +1,14 @@
 version: '3.7'
 
 services:
-  realitica:
-    image: 'romanew/realitica:latest'
-    container_name: realitica
+  estate:
+    image: 'romanew/estate:latest'
+    container_name: estate
     network_mode: host
     environment:
       - server.port=10001
       - spring.datasource.driverClassName=org.postgresql.Driver
-      - spring.datasource.url=jdbc:postgresql://127.0.0.1:5432/realitica
+      - spring.datasource.url=jdbc:postgresql://127.0.0.1:5432/estate
       - spring.datasource.username=${POSTGRES_USER}
       - spring.datasource.password=${POSTGRES_PASSWORD}
       - app.telegram.bot.token=${TELEGRAM_BOT_TOKEN}
