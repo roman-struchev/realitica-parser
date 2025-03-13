@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,9 +31,16 @@ public class LoaderService {
     private void removeDeprecated() {
         log.info("Start scheduler to  remove deprecated");
         var deprecatedDate = OffsetDateTime.now().minusMonths(2);
+        var toRemoveDate = LocalDateTime.now().minusYears(2);
         var deprecatedAdEntities = adRepository.findAll().stream()
                 .filter(s -> s.getUpdated() == null || s.getUpdated().isBefore(deprecatedDate))
-                .filter(s -> resolveLoader(s.getSourceCode()).isCanBeDeleted(s.getSourceId()))
+                .filter(s -> {
+                    if(s.getLastModified() != null && s.getLastModified().isBefore(toRemoveDate)){
+                        log.info("Stun {} is deprecated", s.getId());
+                        return true;
+                    }
+                    return resolveLoader(s.getSourceCode()).isCanBeDeleted(s.getSourceId());
+                })
                 .collect(Collectors.toList());
         adRepository.deleteAll(deprecatedAdEntities);
     }

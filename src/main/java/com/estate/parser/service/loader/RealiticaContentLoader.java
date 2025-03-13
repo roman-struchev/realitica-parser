@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -238,6 +239,11 @@ public class RealiticaContentLoader implements IContentLoader {
                 }
             };
 
+
+            if(lastModified != null && lastModified.isBefore(LocalDateTime.now().minusYears(2).toLocalDate())){
+                log.info("Stun {} is deprecated", id);
+                return null;
+            }
 
             if (adEntity == null) {
                 adEntity = new AdEntity();
