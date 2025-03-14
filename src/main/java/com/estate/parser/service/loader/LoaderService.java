@@ -18,7 +18,7 @@ public class LoaderService {
     private final List<IContentLoader> contentLoaders;
     private final AdRepository adRepository;
 
-    @Scheduled(cron = "0 0 19 * * *") // every day at 19:00 (00:00 Barnaul time)
+    @Scheduled(cron = "0 0 19 * * *") // every day at 19:00
     private void load() {
         contentLoaders.parallelStream().forEach(loader -> {
             log.info("Start loading from {}", loader.getSourceName());
@@ -27,7 +27,7 @@ public class LoaderService {
         });
     }
 
-    @Scheduled(cron = "0 0 22 * * MON") // every Monday at 22:00  (03:00 Barnaul time)
+    @Scheduled(cron = "0 0 18 * * SUN") // every Sunday at 18:00
     private void removeDeprecated() {
         log.info("Start scheduler to  remove deprecated");
         var deprecatedDate = OffsetDateTime.now().minusMonths(2);
