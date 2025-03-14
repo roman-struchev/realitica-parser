@@ -18,7 +18,7 @@ public class LoaderService {
     private final List<IContentLoader> contentLoaders;
     private final AdRepository adRepository;
 
-    @Scheduled(cron = "0 0 19 * * *") // every day at 19:00
+    @Scheduled(cron = "0 0 21 * * *") // every day at 19:00
     private void load() {
         contentLoaders.parallelStream().forEach(loader -> {
             log.info("Start loading from {}", loader.getSourceName());
