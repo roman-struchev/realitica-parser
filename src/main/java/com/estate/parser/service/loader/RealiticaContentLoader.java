@@ -240,7 +240,7 @@ public class RealiticaContentLoader implements IContentLoader {
             };
 
 
-            if(lastModified != null && lastModified.isBefore(LocalDateTime.now().minusYears(2).toLocalDate())){
+            if(lastModified != null && lastModified.isBefore(LocalDateTime.now().minusMonths(18).toLocalDate())){
                 log.info("Stun {} is deprecated", id);
                 return null;
             }

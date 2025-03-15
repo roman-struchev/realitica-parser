@@ -18,7 +18,7 @@ public class LoaderService {
     private final List<IContentLoader> contentLoaders;
     private final AdRepository adRepository;
 
-    @Scheduled(cron = "0 0 21 * * *") // every day at 19:00
+    @Scheduled(cron = "0 0 19 * * *") // every day at 19:00
     private void load() {
         contentLoaders.parallelStream().forEach(loader -> {
             log.info("Start loading from {}", loader.getSourceName());
@@ -31,7 +31,7 @@ public class LoaderService {
     private void removeDeprecated() {
         log.info("Start scheduler to  remove deprecated");
         var deprecatedDate = OffsetDateTime.now().minusMonths(2);
-        var toRemoveDate = LocalDateTime.now().minusYears(2);
+        var toRemoveDate = LocalDateTime.now().minusMonths(18);
         var deprecatedAdEntities = adRepository.findAll().stream()
                 .filter(s -> s.getUpdated() == null || s.getUpdated().isBefore(deprecatedDate))
                 .filter(s -> {
